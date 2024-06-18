@@ -6,7 +6,6 @@
     "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
     "start:server": "cd server && npm start",
     "start:client": "cd client && npm start",
-    "build": "react-scripts build",
     "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "devDependencies": {
