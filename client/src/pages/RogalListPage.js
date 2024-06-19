@@ -43,11 +43,11 @@ const RogalListPage = () => {
                                 <Link to={`/rogals/${rogal._id}`}>{rogal.name}</Link>
                             </Typography>
                             <Typography variant="body1">{rogal.description}</Typography>
-                            <Typography variant="body1">Cena: {rogal.price}</Typography>
-                            <Typography variant="body1">Waga: {rogal.weight}</Typography>
+                            <Typography variant="body1">Cena: {rogal.price} zł</Typography>
+                            <Typography variant="body1">Waga: {rogal.weight} g</Typography>
                             <Typography variant="body1">Średnia ocena: {rogal.averageRating !== undefined ? rogal.averageRating.toFixed(1) : 'No ratings yet'}</Typography>
                             <Typography variant="body1">Stosunek jakości do ceny: {rogal.qualityToPriceRatio !== undefined ? rogal.qualityToPriceRatio.toFixed(2) : 'N/A'}</Typography>
-                            <Typography variant="body1">Cena za 1kg: {rogal.pricePerKg !== undefined ? rogal.pricePerKg.toFixed(2) : 'N/A'}</Typography>
+                            <Typography variant="body1">Cena za 1kg: {rogal.pricePerKg !== undefined ? rogal.pricePerKg.toFixed(2) : 'N/A'} zł</Typography>
                             <Typography variant="body1">Liczba głosów: {rogal.ratings.length}</Typography>
                             {rogal.image && <img src={`http://localhost:5000/${rogal.image}`} alt={rogal.name} />}
                         </CardContent>

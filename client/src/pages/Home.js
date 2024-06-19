@@ -13,6 +13,8 @@ const Home = () => {
         worstRogal: null,
     });
 
+    const [userName, setUserName] = useState('');
+
     useEffect(() => {
         const fetchStats = async () => {
             try {
@@ -23,14 +25,23 @@ const Home = () => {
             }
         };
 
+        const fetchUser = async () => {
+            try {
+                const res = await api.get('/users/me');
+                setUserName(res.data.name);
+            } catch (err) {
+                console.error(err.response.data);
+            }
+        };
+
         fetchStats();
+        fetchUser();
     }, []);
 
     return (
         <Container>
-            <p></p>
             <Typography variant="h4" component="h1" gutterBottom>
-                Witaj na stronie, na której możesz ocenić Rogale Świętomarcińskie:)
+                Witaj {userName}, dodaj lub oceń rogala:)
             </Typography>
             <Box sx={{ mt: 4 }}>
                 <Typography variant="h5" component="h2" gutterBottom>
