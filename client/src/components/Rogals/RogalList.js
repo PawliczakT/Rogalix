@@ -38,8 +38,8 @@ const RogalList = () => {
                             <Link to={`/rogals/${rogal._id}`}>{rogal.name}</Link>
                         </h2>
                         <p>{rogal.description}</p>
-                        <p>Cena: {rogal.price}</p>
-                        <p>Waga: {rogal.weight}</p>
+                        <p>Cena: {rogal.price.toFixed(2)} zł</p>
+                        <p>Waga: {rogal.weight} g</p>
                         <p>Średnia ocena: {rogal.averageRating !== undefined ? rogal.averageRating.toFixed(1) : 'No ratings yet'}</p>
                         <p>Stosunek jakości do ceny: {rogal.qualityToPriceRatio !== undefined ? rogal.qualityToPriceRatio.toFixed(2) : 'N/A'}</p>
                         <p>Cena za 1kg: {rogal.pricePerKg !== undefined ? rogal.pricePerKg.toFixed(2) : 'N/A'}</p>

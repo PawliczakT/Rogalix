@@ -5,6 +5,7 @@ import auth from '../middlewares/auth.js';
 import Rogal from '../models/Rogal.js';
 
 const router = express.Router();
+const upload = multer({ dest: 'uploads/' });
 
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
@@ -16,8 +17,6 @@ const storage = multer.diskStorage({
     },
 });
 
-const upload = multer({ storage: storage });
-
 // @route   POST api/rogals
 // @desc    Add a new rogal
 // @access  Private
@@ -26,8 +25,14 @@ router.post(
     [auth, upload.single('image')],
     [
         check('name', 'Name is required').not().isEmpty(),
-        check('price', 'Price is required').isFloat({ min: 0 }),
-        check('weight', 'Weight is required').isFloat({ min: 0 }),
+        check('price', 'Price is required and must be a valid number').custom(value => {
+            const parsedValue = parseFloat(value.replace(',', '.'));
+            if (isNaN(parsedValue) || parsedValue <= 0) {
+                throw new Error('Price must be a positive number');
+            }
+            return true;
+        }),
+        check('weight', 'Weight is required and must be a positive number').isFloat({ min: 0 }),
     ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -44,10 +49,12 @@ router.post(
                 return res.status(400).json({ msg: 'A rogal with this name already exists' });
             }
 
+            const formattedPrice = parseFloat(price.replace(',', '.')).toFixed(2);
+
             const newRogal = new Rogal({
                 name,
                 description,
-                price,
+                price: formattedPrice,
                 weight,
                 user: req.user.id,
                 image: req.file ? req.file.path : null,

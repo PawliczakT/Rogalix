@@ -13,10 +13,12 @@ const AddRogalModal = ({ isOpen, onRequestClose }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const formattedPrice = parseFloat(price.replace(',', '.')).toFixed(2);
+
         const formData = new FormData();
         formData.append('name', name);
         formData.append('description', description);
-        formData.append('price', price);
+        formData.append('price', formattedPrice);
         formData.append('weight', weight);
         formData.append('image', image);
 
@@ -28,7 +30,10 @@ const AddRogalModal = ({ isOpen, onRequestClose }) => {
             });
             onRequestClose();
         } catch (err) {
-            setError(err.response.data.msg);
+            const errorMsg = err.response && err.response.data && err.response.data.errors
+                ? err.response.data.errors[0].msg
+                : 'An error occurred';
+            setError(errorMsg);
         }
     };
 
@@ -63,7 +68,7 @@ const AddRogalModal = ({ isOpen, onRequestClose }) => {
                 <div>
                     <label>Cena:</label>
                     <input
-                        type="number"
+                        type="text"
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
                         required

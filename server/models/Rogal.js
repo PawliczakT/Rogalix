@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 // Define the Rating Schema
 const RatingSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: 'users', required: true },
-    rating: { type: Number, required: true, min: 1, max: 5 },
+    rating: { type: Number, required: true, min: 1, max: 6 },
     date: { type: Date, default: Date.now }
 });
 
