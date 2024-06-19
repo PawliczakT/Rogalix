@@ -14,8 +14,23 @@ const Home = () => {
     });
 
     const [userName, setUserName] = useState('');
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            setIsLoggedIn(true);
+            const fetchUser = async () => {
+                try {
+                    const res = await api.get('/users/me');
+                    setUserName(res.data.name);
+                } catch (err) {
+                    console.error(err.response.data);
+                }
+            };
+            fetchUser();
+        }
+
         const fetchStats = async () => {
             try {
                 const res = await api.get('/rogals/statistics');
@@ -25,23 +40,18 @@ const Home = () => {
             }
         };
 
-        const fetchUser = async () => {
-            try {
-                const res = await api.get('/users/me');
-                setUserName(res.data.name);
-            } catch (err) {
-                console.error(err.response.data);
-            }
-        };
-
         fetchStats();
-        fetchUser();
     }, []);
 
     return (
         <Container>
+            <p></p>
             <Typography variant="h4" component="h1" gutterBottom>
-                Witaj {userName}, dodaj lub oceń rogala:)
+                {isLoggedIn ? (
+                    <>Witaj {userName}, dodaj lub oceń se rogala:)</>
+                ) : (
+                    <>Witaj na stronie do oceny Rogali Świętomarcińskich, zaloguj się aby móc dodawać rogale i oceny.</>
+                )}
             </Typography>
             <Box sx={{ mt: 4 }}>
                 <Typography variant="h5" component="h2" gutterBottom>

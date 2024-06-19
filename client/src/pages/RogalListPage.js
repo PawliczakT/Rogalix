@@ -11,7 +11,8 @@ const RogalListPage = () => {
         const fetchRogals = async () => {
             try {
                 const res = await api.get('/rogals');
-                setRogals(res.data);
+                const sortedRogals = res.data.sort((a, b) => a.name.localeCompare(b.name));
+                setRogals(sortedRogals);
             } catch (err) {
                 console.error(err.response.data);
             }
