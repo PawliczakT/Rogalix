@@ -34,7 +34,7 @@ const UserRogalsMatrix = () => {
                 <Table sx={{ minWidth: 650 }} aria-label="user rogal matrix">
                     <TableHead>
                         <TableRow>
-                            <TableCell>Rogal</TableCell>
+                            <TableCell>Rogal/Użytkownik</TableCell>
                             {users.map((user, index) => (
                                 <TableCell key={index} align="right">{user}</TableCell>
                             ))}

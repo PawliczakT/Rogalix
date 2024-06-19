@@ -11,6 +11,7 @@ import EditRogal from './components/Rogals/EditRogal';
 import Top10Rogals from './components/Rogals/Top10Rogals';
 import Top10QualityRogals from './components/Rogals/Top10QualityRogals';
 import UserRogalsMatrix from './components/UserRogalsMatrix';
+import Gustometr from './components/Gustometr';
 
 const App = () => {
     return (
@@ -27,6 +28,7 @@ const App = () => {
                 <Route path="/top10quality" element={<Top10QualityRogals />} />
                 <Route path="/add-rogal" element={<AddRogalPage />} />
                 <Route path="/user-ratings-matrix" element={<UserRogalsMatrix />} />
+                <Route path="/gustometr" element={<Gustometr />} />
             </Routes>
         </Router>
     );

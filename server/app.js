@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { mongoURI as db } from './config/config.js';
 import users from './routes/auth.js';
 import rogals from './routes/rogals.js';
+import gustometr from './routes/gustometr.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,6 +36,7 @@ passportConfig(passport);
 // Use Routes
 app.use('/api/users', users);
 app.use('/api/rogals', rogals);
+app.use('/api/gustometr', gustometr);
 
 // Serve static assets if in production
 if (process.env.NODE_ENV === 'production') {
