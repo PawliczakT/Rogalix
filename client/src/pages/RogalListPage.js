@@ -31,8 +31,9 @@ const RogalListPage = () => {
 
     return (
         <Container>
-            <Typography variant="h3" component="h1" gutterBottom>
-                Rogals
+            <p></p>
+            <Typography variant="h4" component="h1" gutterBottom>
+                Wszystkie rogale
             </Typography>
             <Box sx={{ mt: 4 }}>
                 {rogals.map((rogal) => (
