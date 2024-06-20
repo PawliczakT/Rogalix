@@ -6,10 +6,18 @@
     "start": "concurrently \"npm run start:server\" \"npm run start:client\"",
     "start:server": "cd server && npm start",
     "start:client": "cd client && npm start",
-    "heroku-postbuild": "cd client && npm install && npm run build"
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix client && npm run build --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^6.5.1"
   },
   "dependencies": {
-    "concurrently": "^6.5.1"
+    "express": "^4.17.1",
+    "mongoose": "^5.12.2",
+    "passport": "^0.4.1",
+    "passport-jwt": "^4.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0"
   },
   "author": "",
   "license": "ISC"
