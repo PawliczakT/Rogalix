@@ -11,6 +11,8 @@ const Home = () => {
         bestRogal: null,
         lowestRating: 0,
         worstRogal: null,
+        averagePrice: 0,
+        averageWeight: 0,
     });
 
     const [userName, setUserName] = useState('');
@@ -59,11 +61,13 @@ const Home = () => {
                 </Typography>
                 <Typography variant="body1">Ilość ocenianych rogali: {stats.totalRogals}</Typography>
                 <Typography variant="body1">Ilość ocen: {stats.totalRatings}</Typography>
-                <Typography variant="body1">Średnia ocena: {stats.averageRating.toFixed(2)}</Typography>
-                <Typography variant="body1">Najwyższa ocena: {stats.highestRating.toFixed(2)}</Typography>
-                <Typography variant="body1">Najlepszy rogal: {stats.bestRogal}</Typography>
-                <Typography variant="body1">Najniższa ocena: {stats.lowestRating.toFixed(2)}</Typography>
-                <Typography variant="body1">Najgorszy rogal: {stats.worstRogal}</Typography>
+                <Typography variant="body1">Średnia ocena: {stats.averageRating !== undefined ? stats.averageRating.toFixed(2) : 'N/A'}</Typography>
+                <Typography variant="body1">Najwyższa ocena: {stats.highestRating !== undefined ? stats.highestRating.toFixed(2) : 'N/A'}</Typography>
+                <Typography variant="body1">Najlepszy rogal: {stats.bestRogal || 'N/A'}</Typography>
+                <Typography variant="body1">Najniższa ocena: {stats.lowestRating !== undefined ? stats.lowestRating.toFixed(2) : 'N/A'}</Typography>
+                <Typography variant="body1">Najgorszy rogal: {stats.worstRogal || 'N/A'}</Typography>
+                <Typography variant="body1">Średnia cena rogala: {stats.averagePrice !== undefined ? stats.averagePrice.toFixed(2) : 'N/A'} zł</Typography>
+                <Typography variant="body1">Średnia waga rogala: {stats.averageWeight !== undefined ? stats.averageWeight.toFixed(2) : 'N/A'} g</Typography>
             </Box>
         </Container>
     );

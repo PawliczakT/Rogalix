@@ -50,7 +50,7 @@ const RogalListPage = () => {
                             <Typography variant="body1">Stosunek jakości do ceny: {rogal.qualityToPriceRatio !== undefined ? rogal.qualityToPriceRatio.toFixed(2) : 'N/A'}</Typography>
                             <Typography variant="body1">Cena za 1kg: {rogal.pricePerKg !== undefined ? rogal.pricePerKg.toFixed(2) : 'N/A'} zł</Typography>
                             <Typography variant="body1">Liczba głosów: {rogal.ratings.length}</Typography>
-                            {rogal.image && <img src={`http://localhost:5000/${rogal.image}`} alt={rogal.name} />}
+                            {rogal.image && <img src={rogal.image} alt={rogal.name} />}
                         </CardContent>
                         <CardActions>
                             <Button size="small" color="secondary" onClick={() => deleteRogal(rogal._id)}>Usuń</Button>

@@ -47,6 +47,9 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 const port = process.env.PORT || 5000;
 
 app.listen(port, () => console.log(`Server running on port ${port}`));
