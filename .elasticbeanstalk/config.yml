@@ -4,7 +4,7 @@ branch-defaults:
     group_suffix: null
 global:
   application_name: rogalix-app
-  branch: null
+  branch: fix-gustometr
   default_ec2_keyname: null
   default_platform: Node.js 20 running on 64bit Amazon Linux 2023
   default_region: eu-central-1
@@ -13,6 +13,6 @@ global:
   platform_name: null
   platform_version: null
   profile: eb-cli
-  repository: null
+  repository: rogalix
   sc: git
   workspace_type: Application

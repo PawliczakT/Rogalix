@@ -4,6 +4,7 @@
   "description": "Full-stack Rogal App",
   "scripts": {
     "start": "node server/app.js",
+    "postinstall": "cd client && npm install && npm run build",
     "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "dependencies": {
