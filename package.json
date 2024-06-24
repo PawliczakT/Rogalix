@@ -4,10 +4,12 @@
   "description": "Full-stack Rogal App",
   "scripts": {
     "start": "node server/app.js",
-    "heroku-postbuild": "cd client && npm install && npm run start"
+    "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "dependencies": {
-    "concurrently": "^6.5.1"
+    "concurrently": "^6.5.1",
+    "express": "^4.17.1",
+    "mongoose": "^5.11.15"
   },
   "author": "",
   "license": "ISC"
