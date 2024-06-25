@@ -170,6 +170,9 @@ router.get('/statistics', async (req, res) => {
                 acc.totalRogals += 1;
                 acc.totalRatings += rogal.ratings.length;
                 acc.totalRatingSum += totalRating;
+                acc.totalPrice += parseFloat(rogal.price) || 0; // Ensure price is parsed as a float
+                acc.totalWeight += parseFloat(rogal.weight) || 0; // Ensure weight is parsed as a float
+
                 if (avgRating > acc.highestRating) {
                     acc.highestRating = avgRating;
                     acc.bestRogal = rogal.name;
@@ -189,10 +192,14 @@ router.get('/statistics', async (req, res) => {
                 lowestRating: 0,
                 bestRogal: null,
                 worstRogal: null,
+                totalPrice: 0,
+                totalWeight: 0,
             }
         );
 
         stats.averageRating = stats.totalRatings ? stats.totalRatingSum / stats.totalRatings : 0;
+        stats.averagePrice = stats.totalRogals ? stats.totalPrice / stats.totalRogals : 0;
+        stats.averageWeight = stats.totalRogals ? stats.totalWeight / stats.totalRogals : 0;
 
         res.json(stats);
     } catch (err) {

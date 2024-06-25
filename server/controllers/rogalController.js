@@ -12,13 +12,14 @@ const addRogal = async (req, res) => {
         const newRogal = new Rogal({
             name,
             description,
-            price,
-            weight,
+            price: parseFloat(price.replace(',', '.')), // Parse price as float
+            weight: parseFloat(weight.replace(',', '.')), // Parse weight as float
             user: req.user.id,
             image: req.file ? req.file.path : null,
         });
 
         const rogal = await newRogal.save();
+        console.log('New Rogal added:', rogal); // Log the new rogal
         res.json(rogal);
     } catch (err) {
         console.error(err.message);
@@ -41,16 +42,17 @@ const getAllRogals = async (req, res) => {
 const getRogalStatistics = async (req, res) => {
     try {
         const rogals = await Rogal.find();
-        const stats = rogals.reduce((acc, rogal) => {
-            const totalRating = rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0);
-            const avgRating = rogal.ratings.length ? totalRating / rogal.ratings.length : 0;
-            acc.totalRogals += 1;
-            acc.totalRatings += rogal.ratings.length;
-            acc.averageRating += avgRating;
-            acc.totalPrice += parseFloat(rogal.price); // Ensure price is parsed as a float
-            acc.totalWeight += parseFloat(rogal.weight); // Ensure weight is parsed as a float
+        const stats = rogals.reduce(
+            (acc, rogal) => {
+                const totalRating = rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0);
+                const avgRating = rogal.ratings.length ? totalRating / rogal.ratings.length : 0;
 
-            if (rogal.ratings.length > 0) {
+                acc.totalRogals += 1;
+                acc.totalRatings += rogal.ratings.length;
+                acc.totalRatingSum += totalRating;
+                acc.totalPrice += parseFloat(rogal.price) || 0; // Ensure price is parsed as a float
+                acc.totalWeight += parseFloat(rogal.weight) || 0; // Ensure weight is parsed as a float
+
                 if (avgRating > acc.highestRating) {
                     acc.highestRating = avgRating;
                     acc.bestRogal = rogal.name;
@@ -59,24 +61,26 @@ const getRogalStatistics = async (req, res) => {
                     acc.lowestRating = avgRating;
                     acc.worstRogal = rogal.name;
                 }
+
+                return acc;
+            },
+            {
+                totalRogals: 0,
+                totalRatings: 0,
+                totalRatingSum: 0,
+                highestRating: 0,
+                lowestRating: 0,
+                bestRogal: null,
+                worstRogal: null,
+                totalPrice: 0,
+                totalWeight: 0,
             }
+        );
 
-            return acc;
-        }, {
-            totalRogals: 0,
-            totalRatings: 0,
-            averageRating: 0,
-            highestRating: 0,
-            lowestRating: 0,
-            bestRogal: null,
-            worstRogal: null,
-            totalPrice: 0,
-            totalWeight: 0,
-        });
+        stats.averageRating = stats.totalRatings ? stats.totalRatingSum / stats.totalRatings : 0;
+        stats.averagePrice = stats.totalRogals ? stats.totalPrice / stats.totalRogals : 0;
+        stats.averageWeight = stats.totalRogals ? stats.totalWeight / stats.totalRogals : 0;
 
-        stats.averageRating = stats.totalRatings ? (stats.averageRating / stats.totalRogals) : 0;
-        stats.averagePrice = stats.totalRogals ? (stats.totalPrice / stats.totalRogals) : 0;
-        stats.averageWeight = stats.totalRogals ? (stats.totalWeight / stats.totalRogals) : 0;
         res.json(stats);
     } catch (err) {
         console.error(err.message);

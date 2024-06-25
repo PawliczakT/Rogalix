@@ -36,6 +36,7 @@ const Home = () => {
         const fetchStats = async () => {
             try {
                 const res = await api.get('/rogals/statistics');
+                console.log('Fetched stats:', res.data); // Log the fetched stats
                 setStats(res.data);
             } catch (err) {
                 console.error(err.response.data);
