@@ -34,7 +34,6 @@ const Top10QualityRogals = () => {
                             </Typography>
                             <p></p>
                             <Typography variant="body1">Stosunek jakości do ceny: {rogal.qualityToPriceRatio.toFixed(2)}</Typography>
-                            {rogal.image && <img src={`http://localhost:5000/${rogal.image}`} alt={rogal.name} />}
                         </CardContent>
                         <CardActions>
                             <Button size="small" color="primary" component={Link} to={`/rogals/${rogal._id}`}>

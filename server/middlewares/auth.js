@@ -26,4 +26,28 @@ const auth = async (req, res, next) => {
     }
 };
 
-export default auth;
+const adminAuth = async (req, res, next) => {
+    const authHeader = req.header('Authorization');
+    if (!authHeader) {
+        return res.status(401).send({ error: 'Authorization header is missing' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+
+    try {
+        const decoded = jwt.verify(token, secretOrKey);
+        const user = await User.findOne({ _id: decoded.id });
+
+        if (!user || user.role !== 'admin') {
+            return res.status(403).send({ error: 'Access denied. Admins only.' });
+        }
+
+        req.token = token;
+        req.user = user;
+        next();
+    } catch (err) {
+        res.status(401).send({ error: 'Please authenticate.' });
+    }
+};
+
+export { auth, adminAuth };

@@ -17,7 +17,8 @@ const RogalSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: 'users', required: true },
     ratings: [RatingSchema],
     image: { type: String },
-    date: { type: Date, default: Date.now }
+    date: { type: Date, default: Date.now },
+    approved: { type: Boolean, default: false }
 });
 
 // Virtual for average rating

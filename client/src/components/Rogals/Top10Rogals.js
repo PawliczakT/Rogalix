@@ -36,7 +36,6 @@ const Top10Rogals = () => {
                             <Typography variant="body1">
                                 Średnia ocena: {rogal.averageRating && typeof rogal.averageRating === 'number' ? rogal.averageRating.toFixed(1) : 'No ratings yet'}
                             </Typography>
-                            {rogal.image && <img src={`http://localhost:5000/${rogal.image}`} alt={rogal.name} />}
                         </CardContent>
                         <CardActions>
                             <Button size="small" color="primary" component={Link} to={`/rogals/${rogal._id}`}>
