@@ -7,30 +7,28 @@ const RogalListPage = () => {
     const [rogals, setRogals] = useState([]);
     const [averagePrice, setAveragePrice] = useState(0);
     const [averageWeight, setAverageWeight] = useState(0);
+    const [isAdmin, setIsAdmin] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchStatistics = async () => {
-            try {
-                const res = await api.get('/rogals/statistics');
-                setAveragePrice(res.data.averagePrice);
-                setAverageWeight(res.data.averageWeight);
-            } catch (err) {
-                console.error(err.response.data);
-            }
-        };
-
         const fetchRogals = async () => {
             try {
-                const res = await api.get('/rogals');
+                const userRes = await api.get('/users/me');
+                const isAdmin = userRes.data.role === 'admin';
+                setIsAdmin(isAdmin);
+
+                const res = isAdmin ? await api.get('/rogals/admin') : await api.get('/rogals');
                 const sortedRogals = res.data.sort((a, b) => a.name.localeCompare(b.name));
                 setRogals(sortedRogals);
+
+                const statsRes = await api.get('/rogals/statistics');
+                setAveragePrice(statsRes.data.averagePrice);
+                setAverageWeight(statsRes.data.averageWeight);
             } catch (err) {
                 console.error(err.response.data);
             }
         };
 
-        fetchStatistics();
         fetchRogals();
     }, []);
 
@@ -43,10 +41,26 @@ const RogalListPage = () => {
         }
     };
 
+    const approveRogal = async (id) => {
+        try {
+            await api.put(`/rogals/approve/${id}`);
+            const updatedRogals = rogals.map((rogal) =>
+                rogal._id === id ? { ...rogal, approved: true } : rogal
+            );
+            setRogals(updatedRogals);
+        } catch (err) {
+            console.error(err.response.data);
+        }
+    };
+
     const getArrow = (value, average) => {
-        if (value > average) return '↑';
-        if (value < average) return '↓';
-        return '→';
+        if (value > average) {
+            return '↑';
+        } else if (value < average) {
+            return '↓';
+        } else {
+            return '→';
+        }
     };
 
     return (
@@ -74,20 +88,28 @@ const RogalListPage = () => {
                                 <Typography variant="body1">Stosunek jakości do ceny: {rogal.qualityToPriceRatio !== undefined ? rogal.qualityToPriceRatio.toFixed(2) : 'N/A'}</Typography>
                                 <Typography variant="body1">Cena za 1kg: {rogal.pricePerKg !== undefined ? rogal.pricePerKg.toFixed(2) : 'N/A'} zł</Typography>
                                 <Typography variant="body1">Liczba głosów: {rogal.ratings.length}</Typography>
+                                {!rogal.approved && isAdmin && (
+                                    <Button size="small" color="secondary" onClick={() => approveRogal(rogal._id)}>Zatwierdź</Button>
+                                )}
                             </Box>
                             {rogal.image && (
                                 <Box sx={{ ml: 2 }}>
                                     <img
                                         src={`http://localhost:5000/${rogal.image}`}
                                         alt={rogal.name}
-                                        style={{ height: '200px', width: '300px', objectFit: 'cover' }}
+                                        style={{ height: '150px', width: '300px', objectFit: 'cover' }}
                                     />
                                 </Box>
                             )}
                         </CardContent>
                         <CardActions>
-                            <Button size="small" color="secondary" onClick={() => deleteRogal(rogal._id)}>Usuń</Button>
-                            <Button size="small" color="primary" onClick={() => navigate(`/rogals/edit/${rogal._id}`)}>Edytuj</Button>
+                            {isAdmin && (
+                                <>
+                                    <Button size="small" color="primary" onClick={() => approveRogal(rogal._id)} disabled={rogal.approved}>Zatwierdź</Button>
+                                    <Button size="small" color="secondary" onClick={() => deleteRogal(rogal._id)}>Usuń</Button>
+                                    <Button size="small" color="primary" onClick={() => navigate(`/rogals/edit/${rogal._id}`)}>Edytuj</Button>
+                                </>
+                            )}
                         </CardActions>
                     </Card>
                 ))}

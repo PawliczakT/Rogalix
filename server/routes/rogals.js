@@ -1,9 +1,8 @@
 import express from 'express';
 import multer from 'multer';
 import { check, validationResult } from 'express-validator';
-import auth from '../middlewares/auth.js';
+import { auth, adminAuth } from '../middlewares/auth.js';
 import Rogal from '../models/Rogal.js';
-
 const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
 
@@ -58,6 +57,7 @@ router.post(
                 weight,
                 user: req.user.id,
                 image: req.file ? req.file.path : null,
+                approved: false
             });
 
             const rogal = await newRogal.save();
@@ -68,6 +68,56 @@ router.post(
         }
     }
 );
+
+// @route   GET api/rogals/admin
+// @desc    Get all rogals for admin
+// @access  Private/Admin
+router.get('/admin', [auth, adminAuth], async (req, res) => {
+    try {
+        const rogals = await Rogal.find().populate('user', ['name']);
+        const rogalsWithAdditionalInfo = rogals.map(rogal => {
+            const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
+            const pricePerKg = (rogal.price / rogal.weight) * 1000;
+            const qualityToPriceRatio = pricePerKg > 0 ? (averageRating / pricePerKg) * 100 : 0;
+
+            return {
+                ...rogal.toObject(),
+                averageRating: Number(averageRating), // Ensure averageRating is a number
+                qualityToPriceRatio,
+                pricePerKg
+            };
+        });
+
+        res.json(rogalsWithAdditionalInfo);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// @route   PUT api/rogals/approve/:id
+// @desc    Approve a rogal
+// @access  Private/Admin
+router.put('/approve/:id', [auth, adminAuth], async (req, res) => {
+    try {
+        const rogal = await Rogal.findById(req.params.id);
+
+        if (!rogal) {
+            return res.status(404).json({ msg: 'Rogal not found' });
+        }
+
+        rogal.approved = true;
+        await rogal.save();
+
+        res.json(rogal);
+    } catch (err) {
+        console.error(err.message);
+        if (err.kind === 'ObjectId') {
+            return res.status(404).json({ msg: 'Rogal not found' });
+        }
+        res.status(500).send('Server error');
+    }
+});
 
 router.get('/user-ratings', async (req, res) => {
     try {
@@ -209,11 +259,11 @@ router.get('/statistics', async (req, res) => {
 });
 
 // @route   GET api/rogals
-// @desc    Get all rogals
+// @desc    Get all approved rogals
 // @access  Public
 router.get('/', async (req, res) => {
     try {
-        const rogals = await Rogal.find().populate('user', ['name']);
+        const rogals = await Rogal.find({ approved: true }).populate('user', ['name']);
         const rogalsWithAdditionalInfo = rogals.map(rogal => {
             const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
             const pricePerKg = (rogal.price / rogal.weight) * 1000;
@@ -266,27 +316,22 @@ router.get('/:id', async (req, res) => {
 
 // @route   DELETE api/rogals/:id
 // @desc    Delete a rogal
-// @access  Private
-router.delete('/:id', auth, async (req, res) => {
+// @access  Private/Admin
+router.delete('/:id', [auth, adminAuth], async (req, res) => {
     try {
         const rogal = await Rogal.findById(req.params.id);
 
         if (!rogal) {
-            return res.status(404).json({msg: 'Rogal not found'});
-        }
-
-        // Check user
-        if (rogal.user.toString() !== req.user.id) {
-            return res.status(401).json({msg: 'User not authorized'});
+            return res.status(404).json({ msg: 'Rogal not found' });
         }
 
         await rogal.deleteOne();
 
-        res.json({msg: 'Rogal removed'});
+        res.json({ msg: 'Rogal removed' });
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {
-            return res.status(404).json({msg: 'Rogal not found'});
+            return res.status(404).json({ msg: 'Rogal not found' });
         }
         res.status(500).send('Server error');
     }
@@ -327,8 +372,8 @@ router.put('/rating/:id', auth, async (req, res) => {
 
 // @route   PUT api/rogals/:id
 // @desc    Update rogal
-// @access  Private
-router.put('/:id', auth, upload.single('image'), async (req, res) => {
+// @access  Private/Admin
+router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) => {
     const { name, description, price, weight } = req.body;
 
     const rogalFields = {
@@ -347,11 +392,6 @@ router.put('/:id', auth, upload.single('image'), async (req, res) => {
 
         if (!rogal) {
             return res.status(404).json({ msg: 'Rogal not found' });
-        }
-
-        // Check user
-        if (rogal.user.toString() !== req.user.id) {
-            return res.status(401).json({ msg: 'User not authorized' });
         }
 
         // Check if the new name already exists
