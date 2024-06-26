@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AddRogalModal from '../components/Rogals/AddRogalModal';
+import AddRogalModal from '../components/Rogals/AddRogal';
 
 const AddRogalPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(true);
@@ -11,7 +11,6 @@ const AddRogalPage = () => {
 
     return (
         <div>
-            <h1>Dodaj rogala</h1>
             <AddRogalModal isOpen={isModalOpen} onRequestClose={closeModal} />
         </div>
     );
