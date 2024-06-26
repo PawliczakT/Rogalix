@@ -146,11 +146,11 @@ router.get('/user-ratings', async (req, res) => {
 });
 
 // @route   GET api/rogals/top10
-// @desc    Get top 10 rogals by average rating
+// @desc    Get top 10 approved rogals by average rating
 // @access  Public
 router.get('/top10', async (req, res) => {
     try {
-        const rogals = await Rogal.find().populate('user', ['name']);
+        const rogals = await Rogal.find({ approved: true }).populate('user', ['name']);
         const rogalsWithRatings = rogals.map(rogal => {
             const totalRating = rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0);
             const averageRating = rogal.ratings.length ? totalRating / rogal.ratings.length : 0;
@@ -177,11 +177,11 @@ router.get('/top10', async (req, res) => {
 });
 
 // @route   GET api/rogals/top10quality
-// @desc    Get top 10 rogals by quality to price ratio
+// @desc    Get top 10 approved rogals by quality to price ratio
 // @access  Public
 router.get('/top10quality', async (req, res) => {
     try {
-        const rogals = await Rogal.find().populate('user', ['name']);
+        const rogals = await Rogal.find({ approved: true }).populate('user', ['name']);
         const rogalsWithQualityToPriceRatio = rogals.map(rogal => {
             const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
             const pricePerKg = (rogal.price / rogal.weight) * 1000;
@@ -189,7 +189,7 @@ router.get('/top10quality', async (req, res) => {
 
             return {
                 ...rogal.toObject(),
-                averageRating: Number(averageRating), // Ensure averageRating is a number
+                averageRating: Number(averageRating),
                 qualityToPriceRatio,
                 pricePerKg
             };
