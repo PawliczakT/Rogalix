@@ -52,6 +52,8 @@ router.get('/', async (req, res) => {
                                 score += 5;
                             } else if (diff <= 2) {
                                 score += 2.5;
+                            } else if (diff >= 3) {
+                                score -= 2.5;
                             }
                         }
                     });
