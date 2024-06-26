@@ -105,9 +105,6 @@ const RogalDetails = () => {
                             Dodaj ocenę
                         </Button>
                     </form>
-                    <Button variant="contained" color="secondary" onClick={onDelete} sx={{ mt: 2 }}>
-                        Usuń rogala
-                    </Button>
                 </Box>
             </Box>
         </Container>
