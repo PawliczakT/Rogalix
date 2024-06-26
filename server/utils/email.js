@@ -1,4 +1,3 @@
-// utils/email.js
 import nodemailer from 'nodemailer';
 import { emailUser, emailPassword } from '../config/config.js';
 
