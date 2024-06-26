@@ -16,7 +16,7 @@
     "passport-jwt": "^4.0.0"
   },
   "devDependencies": {
-    "concurrently": "^6.5.1"
+    "concurrently": "^6.5.1
   },
   "author": "",
   "license": "ISC"
