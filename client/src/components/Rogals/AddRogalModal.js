@@ -47,7 +47,7 @@ const AddRogalPage = () => {
                 Dodaj rogala
             </Typography>
             {error && <Alert severity="error">{error}</Alert>}
-            {success && <Alert severity="success">Rogal został dodany pomyślnie!</Alert>}
+            {success && <Alert severity="success">Rogal został dodany pomyślnie! Poczekaj na zatwierdzenie przez administratora.</Alert>}
             <form onSubmit={handleSubmit}>
                 <Box sx={{ mb: 2 }}>
                     <TextField
