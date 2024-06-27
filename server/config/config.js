@@ -1,4 +1,8 @@
-const mongoURI = 'mongodb+srv://pawliczaktomasz:mastakilla@rogalove.fmxj2oo.mongodb.net/rogalix?retryWrites=true&w=majority&appName=rogalove';
-const secretOrKey = 'your_secret_key';
+import dotenv from 'dotenv';
+dotenv.config();
 
-export { mongoURI, secretOrKey };
+export const mongoURI = process.env.MONGO_URI;
+export const secretOrKey = process.env.SECRET_OR_KEY;
+export const emailUser = process.env.EMAIL_USER;
+export const emailPassword = process.env.EMAIL_PASSWORD;
+export const REACT_APP_API_URL=process.env.REACT_APP_API_URL;
