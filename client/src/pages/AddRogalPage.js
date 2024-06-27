@@ -11,7 +11,6 @@ const AddRogalPage = () => {
 
     return (
         <div>
-            <h1>Dodaj rogala</h1>
             <AddRogalModal isOpen={isModalOpen} onRequestClose={closeModal} />
         </div>
     );

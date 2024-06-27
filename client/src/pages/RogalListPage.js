@@ -88,9 +88,6 @@ const RogalListPage = () => {
                                 <Typography variant="body1">Stosunek jakości do ceny: {rogal.qualityToPriceRatio !== undefined ? rogal.qualityToPriceRatio.toFixed(2) : 'N/A'}</Typography>
                                 <Typography variant="body1">Cena za 1kg: {rogal.pricePerKg !== undefined ? rogal.pricePerKg.toFixed(2) : 'N/A'} zł</Typography>
                                 <Typography variant="body1">Liczba głosów: {rogal.ratings.length}</Typography>
-                                {!rogal.approved && isAdmin && (
-                                    <Button size="small" color="secondary" onClick={() => approveRogal(rogal._id)}>Zatwierdź</Button>
-                                )}
                             </Box>
                             {rogal.image && (
                                 <Box sx={{ ml: 2 }}>
