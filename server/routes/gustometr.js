@@ -14,10 +14,12 @@ router.get('/', async (req, res) => {
 
         rogals.forEach(rogal => {
             rogal.ratings.forEach(rating => {
-                if (!userRatings[rating.user._id]) {
-                    userRatings[rating.user._id] = {};
+                if (rating.user && rating.user._id) { // Add this check
+                    if (!userRatings[rating.user._id]) {
+                        userRatings[rating.user._id] = {};
+                    }
+                    userRatings[rating.user._id][rogal._id] = rating.rating;
                 }
-                userRatings[rating.user._id][rogal._id] = rating.rating;
             });
         });
 

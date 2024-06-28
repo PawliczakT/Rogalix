@@ -12,6 +12,7 @@ before(async () => {
 
 describe('Auth API', () => {
     const uniqueEmail = `testuser${Date.now()}@example.com`; // Generate a unique email
+
     it('should register a new user', (done) => {
         request(app)
             .post('/api/users/register')
@@ -35,12 +36,15 @@ describe('Auth API', () => {
         request(app)
             .post('/api/users/login')
             .send({
-                email: 'testuser@example.com',
+                email: uniqueEmail, // Use the same unique email generated above
                 password: 'password123'
             })
             .expect(200)
             .end((err, res) => {
-                if (err) return done(err);
+                if (err) {
+                    console.log(res.body); // Log the response body to see the error details
+                    return done(err);
+                }
                 expect(res.body).to.have.property('token');
                 done();
             });

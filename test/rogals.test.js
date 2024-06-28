@@ -5,16 +5,25 @@ import { expect } from 'chai';
 
 let app;
 let token;
+const uniqueEmail = `testuser${Date.now()}@example.com`; // Generate a unique email
 
 before(async () => {
     const importedApp = await import('../server/app.js'); // Use dynamic import
     app = importedApp.default; // Access the default export
 
-    // Login to get token
+    // Register and login to get token
+    await request(app)
+        .post('/api/users/register')
+        .send({
+            name: 'Test User',
+            email: uniqueEmail,
+            password: 'password123'
+        });
+
     await request(app)
         .post('/api/users/login')
         .send({
-            email: 'testuser@example.com',
+            email: uniqueEmail,
             password: 'password123'
         })
         .then(res => {
@@ -23,7 +32,8 @@ before(async () => {
 });
 
 describe('Rogals API', () => {
-    const uniqueRogalName = `Test Rogal ${Date.now()}`; // Generate a unique roagal name
+    const uniqueRogalName = `Test Rogal ${Date.now()}`; // Generate a unique rogal name
+
     it('should add a new rogal', (done) => {
         request(app)
             .post('/api/rogals')
@@ -32,10 +42,13 @@ describe('Rogals API', () => {
             .field('description', 'Test Description')
             .field('price', '12.50')
             .field('weight', '250')
-            .attach('image', 'uploads/rogal.png') // podaj prawidłową ścieżkę do obrazu
+            .attach('image', 'uploads/rogal.png') // Ensure this path is correct and image exists
             .expect(200)
             .end((err, res) => {
-                if (err) return done(err);
+                if (err) {
+                    console.log(res.body); // Log the response body to see the error details
+                    return done(err);
+                }
                 expect(res.body).to.have.property('_id');
                 done();
             });
@@ -46,7 +59,10 @@ describe('Rogals API', () => {
             .get('/api/rogals')
             .expect(200)
             .end((err, res) => {
-                if (err) return done(err);
+                if (err) {
+                    console.log(res.body); // Log the response body to see the error details
+                    return done(err);
+                }
                 expect(res.body).to.be.an('array');
                 done();
             });
