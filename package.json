@@ -2,6 +2,7 @@
   "name": "rogal-app",
   "version": "1.0.0",
   "description": "Full-stack Rogal App",
+  "type": "module",
   "scripts": {
     "start": "node server/app.js",
     "postinstall": "cd client && npm install && npm run build",
