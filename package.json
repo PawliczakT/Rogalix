@@ -2,22 +2,33 @@
   "name": "rogal-app",
   "version": "1.0.0",
   "description": "Full-stack Rogal App",
+  "type": "module",
   "scripts": {
     "start": "node server/app.js",
     "postinstall": "cd client && npm install && npm run build",
-    "heroku-postbuild": "cd client && npm install && npm run build"
+    "heroku-postbuild": "cd client && npm install && npm run build",
+    "test": "mocha --require @babel/register 'test/*.test.js'",
+    "test:client": "react-scripts ../test"
   },
   "dependencies": {
-    "express": "^4.17.1",
+    "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "express": "^4.17.1",
     "mongoose": "^5.12.3",
-    "body-parser": "^1.19.0",
     "passport": "^0.4.1",
-    "passport-jwt": "^4.0.0"
+    "passport-jwt": "^4.0.0",
+    "supertest": "^7.0.0"
   },
   "devDependencies": {
-    "concurrently": "^6.5.1"
+    "@babel/core": "^7.24.7",
+    "@babel/preset-env": "^7.24.7",
+    "@babel/register": "^7.24.6",
+    "concurrently": "^6.5.1",
+    "chai": "^4.4.1",
+    "chai-http": "^4.4.0",
+    "dotenv": "^16.4.5",
+    "mocha": "^10.4.0"
   },
   "author": "",
   "license": "ISC"
