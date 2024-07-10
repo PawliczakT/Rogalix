@@ -28,7 +28,6 @@
     "@babel/register": "^7.24.6",
     "chai": "^4.4.1",
     "chai-http": "^4.4.0",
-    "dotenv": "^16.4.5",
     "mocha": "^10.4.0"
   },
   "author": "",
