@@ -67,4 +67,24 @@ describe('Rogals API', () => {
                 done();
             });
     });
+
+    it('should not add a rogal with the same name twice', (done) => {
+        request(app)
+            .post('/api/rogals')
+            .set('Authorization', `Bearer ${token}`)
+            .field('name', uniqueRogalName) // Use the same name as the first test
+            .field('description', 'Another Description')
+            .field('price', '15.00')
+            .field('weight', '300')
+            .attach('image', 'uploads/rogal.png') // Ensure this path is correct and image exists
+            .expect(400) // Expecting a 400 Bad Request error
+            .end((err, res) => {
+                if (err) {
+                    console.log(res.body); // Log the response body to see the error details
+                    return done(err);
+                }
+                expect(res.body).to.have.property('msg').that.equals('A rogal with this name already exists');
+                done();
+            });
+    });
 });
