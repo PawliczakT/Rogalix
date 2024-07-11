@@ -5,6 +5,7 @@ import {auth, adminAuth} from '../middlewares/auth.js';
 import Rogal from '../models/Rogal.js';
 import {S3Client} from '@aws-sdk/client-s3';
 import {Upload} from '@aws-sdk/lib-storage';
+import {RekognitionClient, DetectLabelsCommand} from '@aws-sdk/client-rekognition';
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -12,6 +13,14 @@ dotenv.config();
 const router = express.Router();
 
 const s3Client = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
+});
+
+const rekognitionClient = new RekognitionClient({
     region: process.env.AWS_REGION,
     credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -39,22 +48,22 @@ router.post(
             }
             return true;
         }),
-        check('weight', 'Weight is required and must be a positive number').isFloat({min: 0}),
+        check('weight', 'Weight is required and must be a positive number').isFloat({ min: 0 }),
     ],
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             console.error("Validation errors:", errors.array());
-            return res.status(400).json({errors: errors.array()});
+            return res.status(400).json({ errors: errors.array() });
         }
 
         try {
-            const {name, description, price, weight} = req.body;
+            const { name, description, price, weight } = req.body;
 
-            const existingRogal = await Rogal.findOne({name});
+            const existingRogal = await Rogal.findOne({ name });
             if (existingRogal) {
                 console.error("Rogal already exists:", name);
-                return res.status(400).json({msg: 'A rogal with this name already exists'});
+                return res.status(400).json({ msg: 'A rogal with this name already exists' });
             }
 
             let imageUrl = null;
@@ -62,25 +71,32 @@ router.post(
                 console.log("Uploading file to S3:", req.file.originalname);
                 const uploadParams = {
                     Bucket: process.env.S3_BUCKET_NAME,
-                    Region: process.env.AWS_REGION,
                     Key: `${Date.now().toString()}-${req.file.originalname}`,
                     Body: req.file.buffer,
                     ContentType: req.file.mimetype
                 };
 
-                const parallelUploads3 = new Upload({
-                    client: s3Client,
-                    params: uploadParams,
-                    leavePartsOnError: false
+                const uploadResult = await s3Client.send(new PutObjectCommand(uploadParams));
+                console.log("S3 upload result:", uploadResult);
+                imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
+
+                // Image recognition using Rekognition
+                const detectLabelsCommand = new DetectLabelsCommand({
+                    Image: {
+                        S3Object: {
+                            Bucket: process.env.S3_BUCKET_NAME,
+                            Name: uploadParams.Key
+                        }
+                    },
+                    MaxLabels: 10
                 });
 
-                try {
-                    const result = await parallelUploads3.done();
-                    console.log("S3 upload result:", result);
-                    imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
-                } catch (uploadError) {
-                    console.error("S3 upload error:", uploadError);
-                    return res.status(500).json({msg: 'Error uploading image to S3', error: uploadError.message});
+                const detectLabelsResult = await rekognitionClient.send(detectLabelsCommand);
+                console.log("Rekognition result:", detectLabelsResult);
+
+                const labels = detectLabelsResult.Labels.map(label => label.Name.toLowerCase());
+                if (!labels.includes('bread') && !labels.includes('croissant') && !labels.includes('pastry')) {
+                    return res.status(400).json({ msg: 'Wygląda na to, że obrazek nie przedstawia rogala' });
                 }
             }
 

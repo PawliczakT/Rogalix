@@ -31,15 +31,14 @@ const AddRogalPage = () => {
             });
             setSuccess(true);
             setError(null);
-            // Clear form fields after successful submission
             setName('');
             setDescription('');
             setPrice('');
             setWeight('');
             setImage(null);
         } catch (err) {
-            const errorMsg = err.response && err.response.data && err.response.data.errors
-                ? err.response.data.errors.map(error => error.msg).join(', ')
+            const errorMsg = err.response && err.response.data && err.response.data.msg
+                ? err.response.data.msg
                 : 'An error occurred';
             setError(errorMsg);
             setSuccess(false);
