@@ -14,6 +14,7 @@ const EditRogal = () => {
         image: null,
     });
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
 
     useEffect(() => {
         const fetchRogal = async () => {
@@ -41,6 +42,8 @@ const EditRogal = () => {
 
     const onSubmit = async (e) => {
         e.preventDefault();
+
+        const formattedPrice = typeof price === 'string' ? parseFloat(price.replace(',', '.')).toFixed(2) : parseFloat(price).toFixed(2);
         const rogalData = new FormData();
         rogalData.append('name', name);
         rogalData.append('description', description);
@@ -51,13 +54,20 @@ const EditRogal = () => {
         }
 
         try {
-            await api.put(`/rogals/${id}`, rogalData);
+            await api.put(`/rogals/${id}`, rogalData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            setSuccess(true);
+            setError(null);
             navigate('/rogals');
         } catch (err) {
             const errorMsg = err.response && err.response.data && err.response.data.msg
                 ? err.response.data.msg
                 : 'An error occurred';
             setError(errorMsg);
+            setSuccess(false);
         }
     };
 
@@ -67,6 +77,7 @@ const EditRogal = () => {
                 Edytuj rogala
             </Typography>
             {error && <Alert severity="error">{error}</Alert>}
+            {success && <Alert severity="success">Rogal został zaktualizowany pomyślnie!</Alert>}
             <form onSubmit={onSubmit}>
                 <Box sx={{ mb: 2 }}>
                     <TextField
