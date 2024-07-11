@@ -86,7 +86,7 @@ const AddRogal = () => {
                         variant="contained"
                         component="label"
                     >
-                        Załaduj zdjęcie
+                        Dodaj zdjęcie
                         <input
                             type="file"
                             hidden

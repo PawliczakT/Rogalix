@@ -115,7 +115,7 @@ const EditRogal = () => {
                         variant="contained"
                         component="label"
                     >
-                        Załaduj zdjęcie
+                        Dodaj zdjęcie
                         <input
                             type="file"
                             name="image"
