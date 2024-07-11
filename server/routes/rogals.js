@@ -1,11 +1,10 @@
 import express from 'express';
 import multer from 'multer';
 import {check, validationResult} from 'express-validator';
-import {auth, adminAuth} from '../middlewares/auth.js';
+import {adminAuth, auth} from '../middlewares/auth.js';
 import Rogal from '../models/Rogal.js';
-import {S3Client, PutObjectCommand} from '@aws-sdk/client-s3';
-import {Upload} from '@aws-sdk/lib-storage';
-import {RekognitionClient, DetectLabelsCommand} from '@aws-sdk/client-rekognition';
+import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
+import {DetectLabelsCommand, RekognitionClient} from '@aws-sdk/client-rekognition';
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -48,22 +47,22 @@ router.post(
             }
             return true;
         }),
-        check('weight', 'Weight is required and must be a positive number').isFloat({ min: 0 }),
+        check('weight', 'Weight is required and must be a positive number').isFloat({min: 0}),
     ],
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             console.error("Validation errors:", errors.array());
-            return res.status(400).json({ errors: errors.array() });
+            return res.status(400).json({errors: errors.array()});
         }
 
         try {
-            const { name, description, price, weight } = req.body;
+            const {name, description, price, weight} = req.body;
 
-            const existingRogal = await Rogal.findOne({ name });
+            const existingRogal = await Rogal.findOne({name});
             if (existingRogal) {
                 console.error("Rogal already exists:", name);
-                return res.status(400).json({ msg: 'A rogal with this name already exists' });
+                return res.status(400).json({msg: 'A rogal with this name already exists'});
             }
 
             let imageUrl = null;
@@ -96,7 +95,7 @@ router.post(
 
                 const labels = detectLabelsResult.Labels.map(label => label.Name.toLowerCase());
                 if (!labels.includes('bread') && !labels.includes('croissant') && !labels.includes('pastry')) {
-                    return res.status(400).json({ msg: 'Wygląda na to, że zdjęcie nie przedstawia rogala:(' });
+                    return res.status(400).json({msg: 'Wygląda na to, że zdjęcie nie przedstawia rogala:('});
                 }
             }
 
@@ -439,21 +438,21 @@ router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) =
     if (req.file) {
         console.log("Uploading file to S3:", req.file.originalname);
 
-        // AI verification of the image
-        const params = {
+        // Image recognition using Rekognition
+        const detectLabelsCommand = new DetectLabelsCommand({
             Image: {
                 Bytes: req.file.buffer,
             },
             MaxLabels: 10,
             MinConfidence: 75,
-        };
+        });
 
         try {
-            const command = new DetectLabelsCommand(params);
-            const { Labels } = await rekognitionClient.send(command);
+            const detectLabelsResult = await rekognitionClient.send(detectLabelsCommand);
+            console.log("Rekognition result:", detectLabelsResult);
 
-            const isRogal = Labels.some(label => label.Name.toLowerCase() === 'rogal');
-            if (!isRogal) {
+            const labels = detectLabelsResult.Labels.map(label => label.Name.toLowerCase());
+            if (!labels.includes('bread') && !labels.includes('croissant') && !labels.includes('pastry')) {
                 return res.status(400).json({ msg: 'Zdjęcie nie przedstawia rogala' });
             }
         } catch (error) {
@@ -465,7 +464,7 @@ router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) =
             Bucket: process.env.S3_BUCKET_NAME,
             Key: `${Date.now().toString()}-${req.file.originalname}`,
             Body: req.file.buffer,
-            ContentType: req.file.mimetype
+            ContentType: req.file.mimetype,
         };
 
         try {
