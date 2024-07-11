@@ -1,10 +1,10 @@
 import express from 'express';
 import multer from 'multer';
-import { check, validationResult } from 'express-validator';
-import { auth, adminAuth } from '../middlewares/auth.js';
+import {check, validationResult} from 'express-validator';
+import {auth, adminAuth} from '../middlewares/auth.js';
 import Rogal from '../models/Rogal.js';
-import { S3Client } from '@aws-sdk/client-s3';
-import { Upload } from '@aws-sdk/lib-storage';
+import {S3Client} from '@aws-sdk/client-s3';
+import {Upload} from '@aws-sdk/lib-storage';
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -39,22 +39,22 @@ router.post(
             }
             return true;
         }),
-        check('weight', 'Weight is required and must be a positive number').isFloat({ min: 0 }),
+        check('weight', 'Weight is required and must be a positive number').isFloat({min: 0}),
     ],
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             console.error("Validation errors:", errors.array());
-            return res.status(400).json({ errors: errors.array() });
+            return res.status(400).json({errors: errors.array()});
         }
 
         try {
-            const { name, description, price, weight } = req.body;
+            const {name, description, price, weight} = req.body;
 
-            const existingRogal = await Rogal.findOne({ name });
+            const existingRogal = await Rogal.findOne({name});
             if (existingRogal) {
                 console.error("Rogal already exists:", name);
-                return res.status(400).json({ msg: 'A rogal with this name already exists' });
+                return res.status(400).json({msg: 'A rogal with this name already exists'});
             }
 
             let imageUrl = null;
@@ -80,7 +80,7 @@ router.post(
                     imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
                 } catch (uploadError) {
                     console.error("S3 upload error:", uploadError);
-                    return res.status(500).json({ msg: 'Error uploading image to S3', error: uploadError.message });
+                    return res.status(500).json({msg: 'Error uploading image to S3', error: uploadError.message});
                 }
             }
 
@@ -140,7 +140,7 @@ router.put('/approve/:id', [auth, adminAuth], async (req, res) => {
         const rogal = await Rogal.findById(req.params.id);
 
         if (!rogal) {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
 
         rogal.approved = true;
@@ -150,7 +150,7 @@ router.put('/approve/:id', [auth, adminAuth], async (req, res) => {
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
         res.status(500).send('Server error');
     }
@@ -187,7 +187,7 @@ router.get('/user-ratings', async (req, res) => {
 // @access  Public
 router.get('/top10', async (req, res) => {
     try {
-        const rogals = await Rogal.find({ approved: true }).populate('user', ['name']);
+        const rogals = await Rogal.find({approved: true}).populate('user', ['name']);
         const rogalsWithRatings = rogals.map(rogal => {
             const totalRating = rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0);
             const averageRating = rogal.ratings.length ? totalRating / rogal.ratings.length : 0;
@@ -218,7 +218,7 @@ router.get('/top10', async (req, res) => {
 // @access  Public
 router.get('/top10quality', async (req, res) => {
     try {
-        const rogals = await Rogal.find({ approved: true }).populate('user', ['name']);
+        const rogals = await Rogal.find({approved: true}).populate('user', ['name']);
         const rogalsWithQualityToPriceRatio = rogals.map(rogal => {
             const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
             const pricePerKg = (rogal.price / rogal.weight) * 1000;
@@ -300,7 +300,7 @@ router.get('/statistics', async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
     try {
-        const rogals = await Rogal.find({ approved: true }).populate('user', ['name']);
+        const rogals = await Rogal.find({approved: true}).populate('user', ['name']);
         const rogalsWithAdditionalInfo = rogals.map(rogal => {
             const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
             const pricePerKg = (rogal.price / rogal.weight) * 1000;
@@ -329,7 +329,7 @@ router.get('/:id', async (req, res) => {
         const rogal = await Rogal.findById(req.params.id).populate('user', ['name']);
 
         if (!rogal) {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
 
         const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
@@ -345,7 +345,7 @@ router.get('/:id', async (req, res) => {
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
         res.status(500).send('Server error');
     }
@@ -359,16 +359,16 @@ router.delete('/:id', [auth, adminAuth], async (req, res) => {
         const rogal = await Rogal.findById(req.params.id);
 
         if (!rogal) {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
 
         await rogal.deleteOne();
 
-        res.json({ msg: 'Rogal removed' });
+        res.json({msg: 'Rogal removed'});
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
         res.status(500).send('Server error');
     }
@@ -378,13 +378,13 @@ router.delete('/:id', [auth, adminAuth], async (req, res) => {
 // @desc    Update rating
 // @access  Private
 router.put('/rating/:id', auth, async (req, res) => {
-    const { rating, comment } = req.body;
+    const {rating, comment} = req.body;
 
     try {
         let rogal = await Rogal.findById(req.params.id);
 
         if (!rogal) {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
 
         const userRating = rogal.ratings.find(r => r.user.toString() === req.user.id);
@@ -395,7 +395,7 @@ router.put('/rating/:id', auth, async (req, res) => {
             userRating.comment = comment;
         } else {
             // Add new rating
-            rogal.ratings.unshift({ user: req.user.id, rating, comment });
+            rogal.ratings.unshift({user: req.user.id, rating, comment});
         }
 
         await rogal.save();
@@ -411,45 +411,65 @@ router.put('/rating/:id', auth, async (req, res) => {
 // @desc    Update rogal
 // @access  Private/Admin
 router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) => {
-    const { name, description, price, weight } = req.body;
+    const {name, description, price, weight} = req.body;
 
     const rogalFields = {
         name,
         description,
-        price,
+        price: parseFloat(price.replace(',', '.')).toFixed(2), // Ensure price is formatted correctly
         weight,
     };
 
     if (req.file) {
-        rogalFields.image = req.file.path;
+        console.log("Uploading file to S3:", req.file.originalname);
+        const uploadParams = {
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: `${Date.now().toString()}-${req.file.originalname}`,
+            Body: req.file.buffer,
+            ContentType: req.file.mimetype
+        };
+        const parallelUploads3 = new Upload({
+            client: s3Client,
+            params: uploadParams,
+            leavePartsOnError: false
+        });
+
+        try {
+            const result = await parallelUploads3.done();
+            console.log("S3 upload result:", result);
+            rogalFields.image = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
+        } catch (uploadError) {
+            console.error("S3 upload error:", uploadError);
+            return res.status(500).json({msg: 'Error uploading image to S3', error: uploadError.message});
+        }
     }
 
     try {
         let rogal = await Rogal.findById(req.params.id);
 
         if (!rogal) {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
 
         // Check if the new name already exists
         if (name !== rogal.name) {
-            const existingRogal = await Rogal.findOne({ name });
+            const existingRogal = await Rogal.findOne({name});
             if (existingRogal) {
-                return res.status(400).json({ msg: 'A rogal with this name already exists' });
+                return res.status(400).json({msg: 'A rogal with this name already exists'});
             }
         }
 
         rogal = await Rogal.findByIdAndUpdate(
             req.params.id,
-            { $set: rogalFields },
-            { new: true }
+            {$set: rogalFields},
+            {new: true}
         );
 
         res.json(rogal);
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
         res.status(500).send('Server error');
     }
