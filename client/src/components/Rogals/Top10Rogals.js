@@ -38,9 +38,6 @@ const Top10Rogals = () => {
                             </Typography>
                         </CardContent>
                         <CardActions>
-                            <Button size="small" color="primary" component={Link} to={`/rogals/${rogal._id}`}>
-                                View
-                            </Button>
                         </CardActions>
                     </Card>
                 ))}

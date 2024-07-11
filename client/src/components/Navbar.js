@@ -24,7 +24,7 @@ const Navbar = () => {
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                     Rogalix
                 </Typography>
-                <Button color="inherit" component={Link} to="/">Główna</Button>
+                <Button color="inherit" component={Link} to="/">Statystyki</Button>
                 <Button color="inherit" component={Link} to="/rogals">Lista ROgali</Button>
                 <Button color="inherit" component={Link} to="/top10">Top 10 - jakość</Button>
                 <Button color="inherit" component={Link} to="/top10quality">Top 10 jakość / cena</Button>
