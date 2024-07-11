@@ -62,6 +62,7 @@ router.post(
                 console.log("Uploading file to S3:", req.file.originalname);
                 const uploadParams = {
                     Bucket: process.env.S3_BUCKET_NAME,
+                    Region: process.env.AWS_REGION,
                     Key: `${Date.now().toString()}-${req.file.originalname}`,
                     Body: req.file.buffer,
                     ContentType: req.file.mimetype,
