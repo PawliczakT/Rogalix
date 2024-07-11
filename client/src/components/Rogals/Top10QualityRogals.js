@@ -30,7 +30,7 @@ const Top10QualityRogals = () => {
                     <Card key={rogal._id} sx={{ mb: 2 }}>
                         <CardContent>
                             <Typography variant="h5" component="h2">
-                                {index + 1}. <Link to={`/rogals/${rogal.rogalId}`}>{rogal.name}</Link>
+                                {index + 1}. <Link to={`/rogals/${rogal._id}`}>{rogal.name}</Link>
                             </Typography>
                             <p></p>
                             <Typography variant="body1">Stosunek jakości do ceny: {rogal.qualityToPriceRatio.toFixed(2)}</Typography>
