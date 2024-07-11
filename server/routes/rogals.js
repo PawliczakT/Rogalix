@@ -427,36 +427,54 @@ router.put('/rating/:id', auth, async (req, res) => {
 // @desc    Update rogal
 // @access  Private/Admin
 router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) => {
-    const {name, description, price, weight} = req.body;
+    const { name, description, price, weight } = req.body;
 
     const rogalFields = {
         name,
         description,
-        price: parseFloat(price.replace(',', '.')).toFixed(2), // Ensure price is formatted correctly
+        price,
         weight,
     };
 
     if (req.file) {
         console.log("Uploading file to S3:", req.file.originalname);
+
+        // AI verification of the image
+        const params = {
+            Image: {
+                Bytes: req.file.buffer,
+            },
+            MaxLabels: 10,
+            MinConfidence: 75,
+        };
+
+        try {
+            const command = new DetectLabelsCommand(params);
+            const { Labels } = await rekognitionClient.send(command);
+
+            const isRogal = Labels.some(label => label.Name.toLowerCase() === 'rogal');
+            if (!isRogal) {
+                return res.status(400).json({ msg: 'Zdjęcie nie przedstawia rogala' });
+            }
+        } catch (error) {
+            console.error('AI verification error:', error);
+            return res.status(500).json({ msg: 'AI verification failed', error: error.message });
+        }
+
         const uploadParams = {
             Bucket: process.env.S3_BUCKET_NAME,
             Key: `${Date.now().toString()}-${req.file.originalname}`,
             Body: req.file.buffer,
             ContentType: req.file.mimetype
         };
-        const parallelUploads3 = new Upload({
-            client: s3Client,
-            params: uploadParams,
-            leavePartsOnError: false
-        });
 
         try {
-            const result = await parallelUploads3.done();
-            console.log("S3 upload result:", result);
+            const uploadResult = await s3Client.send(new PutObjectCommand(uploadParams));
+            console.log("S3 upload result:", uploadResult);
             rogalFields.image = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
         } catch (uploadError) {
             console.error("S3 upload error:", uploadError);
-            return res.status(500).json({msg: 'Error uploading image to S3', error: uploadError.message});
+            return res.status(500).json({ msg: 'Error uploading image to S3', error: uploadError.message });
         }
     }
 
@@ -464,28 +482,27 @@ router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) =
         let rogal = await Rogal.findById(req.params.id);
 
         if (!rogal) {
-            return res.status(404).json({msg: 'Rogal not found'});
+            return res.status(404).json({ msg: 'Rogal not found' });
         }
 
-        // Check if the new name already exists
         if (name !== rogal.name) {
-            const existingRogal = await Rogal.findOne({name});
+            const existingRogal = await Rogal.findOne({ name });
             if (existingRogal) {
-                return res.status(400).json({msg: 'A rogal with this name already exists'});
+                return res.status(400).json({ msg: 'A rogal with this name already exists' });
             }
         }
 
         rogal = await Rogal.findByIdAndUpdate(
             req.params.id,
-            {$set: rogalFields},
-            {new: true}
+            { $set: rogalFields },
+            { new: true }
         );
 
         res.json(rogal);
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {
-            return res.status(404).json({msg: 'Rogal not found'});
+            return res.status(404).json({ msg: 'Rogal not found' });
         }
         res.status(500).send('Server error');
     }
