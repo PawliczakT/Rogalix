@@ -3,7 +3,7 @@ import multer from 'multer';
 import {check, validationResult} from 'express-validator';
 import {auth, adminAuth} from '../middlewares/auth.js';
 import Rogal from '../models/Rogal.js';
-import {S3Client} from '@aws-sdk/client-s3';
+import {S3Client, PutObjectCommand} from '@aws-sdk/client-s3';
 import {Upload} from '@aws-sdk/lib-storage';
 import {RekognitionClient, DetectLabelsCommand} from '@aws-sdk/client-rekognition';
 import dotenv from "dotenv";
