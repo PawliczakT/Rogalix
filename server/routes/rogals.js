@@ -65,8 +65,7 @@ router.post(
                     Region: process.env.AWS_REGION,
                     Key: `${Date.now().toString()}-${req.file.originalname}`,
                     Body: req.file.buffer,
-                    ContentType: req.file.mimetype,
-                    ACL: 'public-read'
+                    ContentType: req.file.mimetype
                 };
 
                 const parallelUploads3 = new Upload({
