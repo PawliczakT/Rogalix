@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Typography, TextField, Button, Box, Alert } from '@mui/material';
 import api from '../../api';
 
-const EditRogalPage = () => {
+const EditRogal = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -14,7 +14,6 @@ const EditRogalPage = () => {
         image: null,
     });
     const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
 
     useEffect(() => {
         const fetchRogal = async () => {
@@ -40,11 +39,8 @@ const EditRogalPage = () => {
         }
     };
 
-    const handleSubmit = async (e) => {
+    const onSubmit = async (e) => {
         e.preventDefault();
-
-        const formattedPrice = parseFloat(price.replace(',', '.')).toFixed(2);
-
         const rogalData = new FormData();
         rogalData.append('name', name);
         rogalData.append('description', description);
@@ -55,20 +51,13 @@ const EditRogalPage = () => {
         }
 
         try {
-            await api.put(`/rogals/${id}`, rogalData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            setSuccess(true);
-            setError(null);
+            await api.put(`/rogals/${id}`, rogalData);
             navigate('/rogals');
         } catch (err) {
-            const errorMsg = err.response && err.response.data && err.response.data.errors
-                ? err.response.data.errors.map(error => error.msg).join(', ')
+            const errorMsg = err.response && err.response.data && err.response.data.msg
+                ? err.response.data.msg
                 : 'An error occurred';
             setError(errorMsg);
-            setSuccess(false);
         }
     };
 
@@ -78,8 +67,7 @@ const EditRogalPage = () => {
                 Edytuj rogala
             </Typography>
             {error && <Alert severity="error">{error}</Alert>}
-            {success && <Alert severity="success">Rogal został zaktualizowany pomyślnie!</Alert>}
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={onSubmit}>
                 <Box sx={{ mb: 2 }}>
                     <TextField
                         label="Nazwa"
@@ -103,8 +91,8 @@ const EditRogalPage = () => {
                 <Box sx={{ mb: 2 }}>
                     <TextField
                         label="Waga"
-                        type="number"
                         name="weight"
+                        type="number"
                         value={weight}
                         onChange={onChange}
                         required
@@ -138,4 +126,4 @@ const EditRogalPage = () => {
     );
 };
 
-export default EditRogalPage;
+export default EditRogal;
