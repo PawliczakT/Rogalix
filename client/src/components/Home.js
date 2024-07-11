@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import { Container, Typography, Box, Grid } from '@mui/material';
+import { Container, Typography, Box, Grid, Paper, Card, CardContent } from '@mui/material';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
@@ -19,6 +19,7 @@ const Home = () => {
     });
 
     const [priceRatingData, setPriceRatingData] = useState([]);
+    const [priceWeightData, setPriceWeightData] = useState([]);
     const [userName, setUserName] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -31,7 +32,7 @@ const Home = () => {
                     const res = await api.get('/users/me');
                     setUserName(res.data.name);
                 } catch (err) {
-                    console.error(err.response.data);
+                    console.error(err.response ? err.response.data : err.message);
                 }
             };
             fetchUser();
@@ -43,7 +44,7 @@ const Home = () => {
                 console.log('Fetched stats:', res.data); // Log the fetched stats
                 setStats(res.data);
             } catch (err) {
-                console.error(err.response.data);
+                console.error(err.response ? err.response.data : err.message);
             }
         };
 
@@ -53,13 +54,20 @@ const Home = () => {
                 const data = res.data.map(rogal => ({
                     name: rogal.name,
                     price: parseFloat(rogal.price),
+                    weight: parseFloat(rogal.weight) / 10, // Convert weight to decagrams
                     averageRating: rogal.ratings.length > 0
                         ? rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length
                         : 0
                 }));
                 setPriceRatingData(data);
+                const priceWeightData = data.map(rogal => ({
+                    name: rogal.name,
+                    pricePerKg: Math.round(parseFloat(rogal.price) / parseFloat(rogal.weight) * 100), // Convert price per kg
+                    weight: parseFloat(rogal.weight)
+                }));
+                setPriceWeightData(priceWeightData);
             } catch (err) {
-                console.error(err.response.data);
+                console.error(err.response ? err.response.data : err.message);
             }
         };
 
@@ -76,38 +84,88 @@ const Home = () => {
                     <>Witaj na stronie do oceny Rogali Świętomarcińskich, zaloguj się aby móc dodawać rogale i oceny.</>
                 )}
             </Typography>
-            <Grid container spacing={4}>
+            <Box sx={{ mt: 4 }}>
+                <Paper elevation={3} sx={{ padding: 2 }}>
+                    <Typography variant="h5" component="h2" gutterBottom>
+                        Garść statystyk:
+                    </Typography>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="body1">Ilość ocenianych rogali: {stats.totalRogals}</Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="body1">Ilość ocen: {stats.totalRatings}</Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="body1">Średnia ocena: {stats.averageRating !== undefined ? stats.averageRating.toFixed(2) : 'N/A'}</Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="body1">Najwyższa ocena: {stats.highestRating !== undefined ? stats.highestRating.toFixed(2) : 'N/A'}</Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="body1">Najlepszy rogal: {stats.bestRogal || 'N/A'}</Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="body1">Najniższa ocena: {stats.lowestRating !== undefined ? stats.lowestRating.toFixed(2) : 'N/A'}</Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="body1">Najgorszy rogal: {stats.worstRogal || 'N/A'}</Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="body1">Średnia cena rogala: {stats.averagePrice !== undefined ? stats.averagePrice.toFixed(2) : 'N/A'} zł</Typography>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Typography variant="body1">Średnia waga rogala: {stats.averageWeight !== undefined ? (stats.averageWeight / 10).toFixed(2) : 'N/A'} dag</Typography> {/* Convert to decagrams */}
+                        </Grid>
+                    </Grid>
+                </Paper>
+            </Box>
+            <Grid container spacing={4} sx={{ mt: 4 }}>
                 <Grid item xs={12} md={6}>
-                    <Box sx={{ mt: 4 }}>
-                        <Typography variant="h5" component="h2" gutterBottom>
-                            Garść statystyk:
-                        </Typography>
-                        <Typography variant="body1">Ilość ocenianych rogali: {stats.totalRogals}</Typography>
-                        <Typography variant="body1">Ilość ocen: {stats.totalRatings}</Typography>
-                        <Typography variant="body1">Średnia ocena: {stats.averageRating !== undefined ? stats.averageRating.toFixed(2) : 'N/A'}</Typography>
-                        <Typography variant="body1">Najwyższa ocena: {stats.highestRating !== undefined ? stats.highestRating.toFixed(2) : 'N/A'}</Typography>
-                        <Typography variant="body1">Najlepszy rogal: {stats.bestRogal || 'N/A'}</Typography>
-                        <Typography variant="body1">Najniższa ocena: {stats.lowestRating !== undefined ? stats.lowestRating.toFixed(2) : 'N/A'}</Typography>
-                        <Typography variant="body1">Najgorszy rogal: {stats.worstRogal || 'N/A'}</Typography>
-                        <Typography variant="body1">Średnia cena rogala: {stats.averagePrice !== undefined ? stats.averagePrice.toFixed(2) : 'N/A'} zł</Typography>
-                        <Typography variant="body1">Średnia waga rogala: {stats.averageWeight !== undefined ? stats.averageWeight.toFixed(2) : 'N/A'} g</Typography>
-                    </Box>
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h6" component="h3" gutterBottom>
+                                Cena i Średnia Ocena
+                            </Typography>
+                            <ResponsiveContainer width="100%" height={400}>
+                                <LineChart
+                                    data={priceRatingData}
+                                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="price" stroke="#8884d8" name="cena" />
+                                    <Line type="monotone" dataKey="averageRating" stroke="#82ca9d" name="średnia ocena" />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                    <ResponsiveContainer width="100%" height={400}>
-                        <LineChart
-                            data={priceRatingData}
-                            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                        >
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Line type="monotone" dataKey="price" stroke="#8884d8" name="cena" />
-                            <Line type="monotone" dataKey="averageRating" stroke="#82ca9d" name="średnia ocena" />
-                        </LineChart>
-                    </ResponsiveContainer>
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h6" component="h3" gutterBottom>
+                                Cena za Kilogram i Waga
+                            </Typography>
+                            <ResponsiveContainer width="100%" height={400}>
+                                <LineChart
+                                    data={priceWeightData}
+                                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="pricePerKg" stroke="#8884d8" name="cena za kg" />
+                                    <Line type="monotone" dataKey="weight" stroke="#82ca9d" name="waga (dag)" /> {/* Display weight in decagrams */}
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
                 </Grid>
             </Grid>
         </Container>
