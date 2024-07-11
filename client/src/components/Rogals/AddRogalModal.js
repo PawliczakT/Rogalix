@@ -31,9 +31,15 @@ const AddRogalPage = () => {
             });
             setSuccess(true);
             setError(null);
+            // Clear form fields after successful submission
+            setName('');
+            setDescription('');
+            setPrice('');
+            setWeight('');
+            setImage(null);
         } catch (err) {
             const errorMsg = err.response && err.response.data && err.response.data.errors
-                ? err.response.data.errors[0].msg
+                ? err.response.data.errors.map(error => error.msg).join(', ')
                 : 'An error occurred';
             setError(errorMsg);
             setSuccess(false);
@@ -42,7 +48,6 @@ const AddRogalPage = () => {
 
     return (
         <Container>
-            <p></p>
             <Typography variant="h4" component="h1" gutterBottom>
                 Dodaj rogala
             </Typography>
@@ -89,6 +94,11 @@ const AddRogalPage = () => {
                             onChange={(e) => setImage(e.target.files[0])}
                         />
                     </Button>
+                    {image && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                            {image.name}
+                        </Typography>
+                    )}
                 </Box>
                 <Button type="submit" variant="contained" color="primary">
                     Dodaj rogala

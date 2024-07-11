@@ -71,8 +71,7 @@ const RogalDetails = () => {
                         <Typography variant="body1">
                             Liczba głosów: {rogal.ratings ? rogal.ratings.length : 'No votes yet'}
                         </Typography>
-                        {rogal.image && <img src={`http://localhost:5000/${rogal.image}`} alt={rogal.name} style={{ maxWidth: '100%' }} />}
-                    </CardContent>
+                        {rogal.image && <img src={rogal.image} alt={rogal.name} style={{ maxWidth: '100%' }} />}                    </CardContent>
                 </Card>
                 <Box sx={{ mt: 4 }}>
                     <Typography variant="h5" component="h2" gutterBottom>

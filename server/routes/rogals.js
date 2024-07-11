@@ -3,17 +3,25 @@ import multer from 'multer';
 import { check, validationResult } from 'express-validator';
 import { auth, adminAuth } from '../middlewares/auth.js';
 import Rogal from '../models/Rogal.js';
-const router = express.Router();
-const upload = multer({ dest: 'uploads/' });
+import { S3Client } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
+import dotenv from "dotenv";
 
-// Configure Multer for file uploads
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname);
-    },
+dotenv.config();
+
+const router = express.Router();
+
+const s3Client = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
+});
+
+// Configure Multer to use S3
+const upload = multer({
+    storage: multer.memoryStorage()
 });
 
 // @route   POST api/rogals
@@ -36,16 +44,44 @@ router.post(
     async (req, res) => {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            console.error("Validation errors:", errors.array());
             return res.status(400).json({ errors: errors.array() });
         }
 
         try {
             const { name, description, price, weight } = req.body;
 
-            // Check if a rogal with the same name already exists
             const existingRogal = await Rogal.findOne({ name });
             if (existingRogal) {
+                console.error("Rogal already exists:", name);
                 return res.status(400).json({ msg: 'A rogal with this name already exists' });
+            }
+
+            let imageUrl = null;
+            if (req.file) {
+                console.log("Uploading file to S3:", req.file.originalname);
+                const uploadParams = {
+                    Bucket: process.env.S3_BUCKET_NAME,
+                    Key: `${Date.now().toString()}-${req.file.originalname}`,
+                    Body: req.file.buffer,
+                    ContentType: req.file.mimetype,
+                    ACL: 'public-read'
+                };
+
+                const parallelUploads3 = new Upload({
+                    client: s3Client,
+                    params: uploadParams,
+                    leavePartsOnError: false
+                });
+
+                try {
+                    const result = await parallelUploads3.done();
+                    console.log("S3 upload result:", result);
+                    imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
+                } catch (uploadError) {
+                    console.error("S3 upload error:", uploadError);
+                    return res.status(500).json({ msg: 'Error uploading image to S3', error: uploadError.message });
+                }
             }
 
             const formattedPrice = parseFloat(price.replace(',', '.')).toFixed(2);
@@ -56,14 +92,15 @@ router.post(
                 price: formattedPrice,
                 weight,
                 user: req.user.id,
-                image: req.file ? req.file.path : null,
+                image: imageUrl,
                 approved: false
             });
 
             const rogal = await newRogal.save();
+            console.log("New Rogal added:", rogal);
             res.json(rogal);
         } catch (err) {
-            console.error(err.message);
+            console.error("Server error:", err.message);
             res.status(500).send('Server error');
         }
     }

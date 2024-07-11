@@ -15,7 +15,7 @@ const addRogal = async (req, res) => {
             price: parseFloat(price.replace(',', '.')), // Parse price as float
             weight: parseFloat(weight.replace(',', '.')), // Parse weight as float
             user: req.user.id,
-            image: req.file ? req.file.path : null,
+            image: req.file ? req.file.location : null,
         });
 
         const rogal = await newRogal.save();

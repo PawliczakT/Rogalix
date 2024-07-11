@@ -92,7 +92,7 @@ const RogalListPage = () => {
                             {rogal.image && (
                                 <Box sx={{ ml: 2 }}>
                                     <img
-                                        src={`http://localhost:5000/${rogal.image}`}
+                                        src={rogal.image}
                                         alt={rogal.name}
                                         style={{ height: '150px', width: '300px', objectFit: 'cover' }}
                                     />
