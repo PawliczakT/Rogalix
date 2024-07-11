@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../api';
+import api from '../../api';
 import { Container, Typography, Button, Box, Card, CardContent, CardActions } from '@mui/material';
 
 const RogalListPage = () => {

@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import RogalListPage from './pages/RogalListPage';
-import AddRogalPage from './pages/AddRogalPage';
+import Home from './components/Home';
+import RogalListPage from './components/Rogals/RogalListPage';
+import AddRogal from './components/Rogals/AddRogal'; // Update the import statement
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
 import RogalDetails from './components/Rogals/RogalDetails';
@@ -26,7 +26,7 @@ const App = () => {
                 <Route path="/rogals/edit/:id" element={<EditRogal />} />
                 <Route path="/top10" element={<Top10Rogals />} />
                 <Route path="/top10quality" element={<Top10QualityRogals />} />
-                <Route path="/add-rogal" element={<AddRogalPage />} />
+                <Route path="/add-rogal" element={<AddRogal />} /> {/* Update the route */}
                 <Route path="/user-ratings-matrix" element={<UserRogalsMatrix />} />
                 <Route path="/gustometr" element={<Gustometr />} />
             </Routes>

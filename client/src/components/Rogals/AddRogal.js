@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Container, Typography, TextField, Button, Box, Alert } from '@mui/material';
 import api from '../../api';
 
-const AddRogalPage = () => {
+const AddRogal = () => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
@@ -107,4 +107,4 @@ const AddRogalPage = () => {
     );
 };
 
-export default AddRogalPage;
+export default AddRogal;
