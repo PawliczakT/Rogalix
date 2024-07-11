@@ -96,7 +96,7 @@ router.post(
 
                 const labels = detectLabelsResult.Labels.map(label => label.Name.toLowerCase());
                 if (!labels.includes('bread') && !labels.includes('croissant') && !labels.includes('pastry')) {
-                    return res.status(400).json({ msg: 'Uploaded image does not appear to be a rogal (pastry).' });
+                    return res.status(400).json({ msg: 'Wygląda na to, że zdjęcie nie przedstawia rogala:(' });
                 }
             }
 
