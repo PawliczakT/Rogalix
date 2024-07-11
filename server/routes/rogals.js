@@ -73,7 +73,7 @@ router.post(
                     Bucket: process.env.S3_BUCKET_NAME,
                     Key: `${Date.now().toString()}-${req.file.originalname}`,
                     Body: req.file.buffer,
-                    ContentType: req.file.mimetype
+                    ContentType: req.file.mimetype,
                 };
 
                 const uploadResult = await s3Client.send(new PutObjectCommand(uploadParams));
@@ -96,7 +96,7 @@ router.post(
 
                 const labels = detectLabelsResult.Labels.map(label => label.Name.toLowerCase());
                 if (!labels.includes('bread') && !labels.includes('croissant') && !labels.includes('pastry')) {
-                    return res.status(400).json({ msg: 'Wygląda na to, że obrazek nie przedstawia rogala' });
+                    return res.status(400).json({ msg: 'Uploaded image does not appear to be a rogal (pastry).' });
                 }
             }
 
