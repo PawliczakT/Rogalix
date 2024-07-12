@@ -14,7 +14,7 @@ let token;
 const uniqueEmail = `testuser${Date.now()}@example.com`; // Generate a unique email
 
 before(async function () {
-    this.timeout(20000); // Increase the timeout to 20 seconds
+    this.timeout(20000);
 
     try {
         console.log("Importing app...");
