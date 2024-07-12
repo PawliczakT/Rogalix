@@ -39,12 +39,13 @@ jobs:
 
       - name: Set up environment variables
         run: |
-          echo "MONGODB_URI=mongodb://localhost:27017/testdb" >> .env
+          echo "MONGO_URI=$MONGO_URI" >> .env
           echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
           echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
           echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env
           echo "AWS_REGION=$AWS_REGION" >> .env
         env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
