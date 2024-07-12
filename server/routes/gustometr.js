@@ -6,10 +6,8 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        // Pobierz wszystkie rogale z ocenami
         const rogals = await Rogal.find().populate('ratings.user');
 
-        // Stwórz obiekt do przechowywania ocen użytkowników
         const userRatings = {};
 
         rogals.forEach(rogal => {
@@ -23,17 +21,14 @@ router.get('/', async (req, res) => {
             });
         });
 
-        // Lista użytkowników
         const userIds = Object.keys(userRatings);
 
-        // Pobierz nazwy użytkowników
         const users = await User.find({ _id: { $in: userIds } }, 'name');
         const userMap = {};
         users.forEach(user => {
             userMap[user._id] = user.name;
         });
 
-        // Stwórz macierz porównania gustów
         const tasteMatrix = {};
 
         userIds.forEach(user1 => {

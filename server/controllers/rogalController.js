@@ -1,6 +1,5 @@
 import Rogal from '../models/Rogal.js';
 
-// Add a new rogal
 const addRogal = async (req, res) => {
     const { name, description, price, weight } = req.body;
     try {
@@ -27,7 +26,6 @@ const addRogal = async (req, res) => {
     }
 };
 
-// Get all rogals
 const getAllRogals = async (req, res) => {
     try {
         const rogals = await Rogal.find().populate('user', ['name']);
@@ -38,7 +36,6 @@ const getAllRogals = async (req, res) => {
     }
 };
 
-// Get rogal statistics
 const getRogalStatistics = async (req, res) => {
     try {
         const rogals = await Rogal.find();
@@ -88,7 +85,6 @@ const getRogalStatistics = async (req, res) => {
     }
 };
 
-// Get top 10 rogals by average rating
 const getTop10Rogals = async (req, res) => {
     try {
         const rogals = await Rogal.find();
@@ -112,7 +108,6 @@ const getTop10Rogals = async (req, res) => {
     }
 };
 
-// Get top 10 rogals by quality to price ratio
 const getTop10QualityRogals = async (req, res) => {
     try {
         const rogals = await Rogal.find();

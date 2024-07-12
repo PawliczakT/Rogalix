@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { secretOrKey } from '../config/config.js';
 
-// Register User
 const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -43,7 +42,6 @@ const registerUser = async (req, res) => {
     }
 };
 
-// Login User
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
 

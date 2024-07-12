@@ -14,8 +14,8 @@ const Login = () => {
         try {
             const res = await api.post('/users/login', { email, password });
             localStorage.setItem('token', res.data.token);
-            window.location.href = '/'; // Przeniesienie użytkownika na stronę główną
-            window.location.reload(); // Przeładowanie strony po zalogowaniu
+            window.location.href = '/rogals';
+            // window.location.reload();
         } catch (err) {
             setError(err.response.data.msg);
         }
