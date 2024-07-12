@@ -4,7 +4,6 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -21,17 +20,12 @@ jobs:
 
       - name: Set up environment variables
         run: |
-          echo "MONGO_URI=$MONGO_URI" >> .env
-          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> .env
-          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> .env
-          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME" >> .env
-          echo "AWS_REGION=$AWS_REGION" >> .env
-        env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+          echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> .env
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+          cat .env
 
       - name: Set up MongoDB
         uses: supercharge/mongodb-github-action@1.4.0
@@ -39,4 +33,10 @@ jobs:
           mongodb-version: '4.4'
 
       - name: Run tests
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: npx mocha --require @babel/register 'test/*.test.js' --timeout 10000
