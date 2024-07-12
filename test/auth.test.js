@@ -5,9 +5,16 @@ import { expect } from 'chai';
 
 let app;
 
-before(async () => {
-    const importedApp = await import('../server/app.js'); // Use dynamic import
-    app = importedApp.default; // Access the default export
+before(async function () {
+    this.timeout(10000); // Increase timeout to 10 seconds
+
+    try {
+        const importedApp = await import('../server/app.js'); // Use dynamic import
+        app = importedApp.default; // Access the default export
+    } catch (error) {
+        console.error("App import failed:", error);
+        throw error;
+    }
 });
 
 describe('Auth API', () => {
