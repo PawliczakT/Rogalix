@@ -39,4 +39,4 @@ jobs:
           mongodb-version: '4.4'
 
       - name: Run tests
-        run: mocha --require @babel/register 'test/*.test.js' --timeout 10000
+        run: npx mocha --require @babel/register 'test/*.test.js' --timeout 10000
