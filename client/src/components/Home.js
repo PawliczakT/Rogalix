@@ -62,7 +62,7 @@ const Home = () => {
                 setPriceRatingData(data);
                 const priceWeightData = data.map(rogal => ({
                     name: rogal.name,
-                    pricePerKg: Math.round(parseFloat(rogal.price) / parseFloat(rogal.weight) * 100), // Convert price per kg
+                    price: parseFloat(rogal.price),
                     weight: parseFloat(rogal.weight)
                 }));
                 setPriceWeightData(priceWeightData);
@@ -77,6 +77,7 @@ const Home = () => {
 
     return (
         <Container>
+            <p></p>
             <Typography variant="h4" component="h1" gutterBottom>
                 {isLoggedIn ? (
                     <>Witaj {userName}, dodaj lub oceń se rogala:)</>
@@ -138,7 +139,7 @@ const Home = () => {
                                     <Tooltip />
                                     <Legend />
                                     <Line type="monotone" dataKey="price" stroke="#8884d8" name="cena" />
-                                    <Line type="monotone" dataKey="averageRating" stroke="#82ca9d" name="średnia ocena" />
+                                    <Line type="monotone" dataKey="averageRating" stroke="violet" name="średnia ocena" />
                                 </LineChart>
                             </ResponsiveContainer>
                         </CardContent>
@@ -148,7 +149,7 @@ const Home = () => {
                     <Card>
                         <CardContent>
                             <Typography variant="h6" component="h3" gutterBottom>
-                                Cena za Kilogram i Waga
+                                Cena i Waga
                             </Typography>
                             <ResponsiveContainer width="100%" height={400}>
                                 <LineChart
@@ -160,8 +161,8 @@ const Home = () => {
                                     <YAxis />
                                     <Tooltip />
                                     <Legend />
-                                    <Line type="monotone" dataKey="pricePerKg" stroke="#8884d8" name="cena za kg" />
-                                    <Line type="monotone" dataKey="weight" stroke="#82ca9d" name="waga (dag)" /> {/* Display weight in decagrams */}
+                                    <Line type="monotone" dataKey="price" stroke="#8884d8" name="cena" />
+                                    <Line type="monotone" dataKey="weight" stroke="#82ca9d" name="waga (dag)" />
                                 </LineChart>
                             </ResponsiveContainer>
                         </CardContent>
