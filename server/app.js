@@ -7,6 +7,7 @@ import bodyParser from 'body-parser';
 import passport from 'passport';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import session from 'express-session'; // Import express-session
 import { mongoURI as db } from './config/config.js';
 import users from './routes/auth.js';
 import rogals from './routes/rogals.js';
@@ -23,6 +24,16 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+// Express session middleware
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET,
+        resave: false,
+        saveUninitialized: true,
+        cookie: { secure: false }, // Set to true if using https
+    })
+);
+
 // Connect to MongoDB
 mongoose.connect(db)
     .then(() => console.log('MongoDB Connected'))
@@ -30,6 +41,7 @@ mongoose.connect(db)
 
 // Passport middleware
 app.use(passport.initialize());
+app.use(passport.session()); // Add passport.session() middleware
 
 // Passport Config
 import passportConfig from './config/passport.js';

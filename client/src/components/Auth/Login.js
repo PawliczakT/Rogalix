@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
-import { Container, TextField, Button, Typography } from '@mui/material';
+import { Container, TextField, Button, Typography, Box } from '@mui/material';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -15,7 +15,6 @@ const Login = () => {
             const res = await api.post('/users/login', { email, password });
             localStorage.setItem('token', res.data.token);
             window.location.href = '/rogals';
-            // window.location.reload();
         } catch (err) {
             setError(err.response.data.msg);
         }
@@ -23,7 +22,6 @@ const Login = () => {
 
     return (
         <Container>
-
             {error && <Typography color="error">{error}</Typography>}
             <form onSubmit={handleSubmit}>
                 <TextField
@@ -44,10 +42,21 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
-                <Button type="submit" variant="contained" color="primary">
-                    Zaloguj się
-                </Button>
+                <Box mt={2}>
+                    <Button type="submit" variant="contained" color="primary">
+                        Zaloguj się
+                    </Button>
+                </Box>
             </form>
+            <Box mt={2}>
+                <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => window.location.href = 'http://localhost:5000/api/users/google'}
+                >
+                    Zaloguj się przez Google
+                </Button>
+            </Box>
         </Container>
     );
 };

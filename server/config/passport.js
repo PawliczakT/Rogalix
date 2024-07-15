@@ -1,24 +1,39 @@
-import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import mongoose from 'mongoose';
-import { secretOrKey } from './config.js';
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import User from '../models/User.js';
 
-const User = mongoose.model('users');
+export default (passport) => {
+    passport.serializeUser((user, done) => {
+        done(null, user.id);
+    });
 
-const opts = {};
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secretOrKey = secretOrKey;
+    passport.deserializeUser((id, done) => {
+        User.findById(id, (err, user) => {
+            done(err, user);
+        });
+    });
 
-export default function(passport) {
-    passport.use(
-        new JwtStrategy(opts, (jwt_payload, done) => {
-            User.findById(jwt_payload.id)
-                .then(user => {
-                    if (user) {
-                        return done(null, user);
-                    }
-                    return done(null, false);
-                })
-                .catch(err => console.log(err));
-        })
-    );
+    passport.use(new GoogleStrategy({
+            clientID: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            callbackURL: process.env.GOOGLE_CALLBACK_URL
+        },
+        async (token, tokenSecret, profile, done) => {
+            try {
+                let user = await User.findOne({ googleId: profile.id });
+
+                if (!user) {
+                    user = new User({
+                        googleId: profile.id,
+                        name: profile.displayName,
+                        email: profile.emails[0].value
+                    });
+                    await user.save();
+                }
+
+                return done(null, user);
+            } catch (err) {
+                return done(err, false, { message: 'Internal Server Error' });
+            }
+        }));
 };

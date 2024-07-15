@@ -1,8 +1,9 @@
 import express from 'express';
+import passport from 'passport';
 import { check, validationResult } from 'express-validator';
 import authController from '../controllers/authController.js';
 import User from '../models/User.js';
-import { auth, adminAuth } from '../middlewares/auth.js';
+import { auth } from '../middlewares/auth.js';
 
 const router = express.Router();
 
@@ -54,6 +55,42 @@ router.get('/me', auth, async (req, res) => {
         console.error(err.message);
         res.status(500).send('Server error');
     }
+});
+
+// @route   GET api/users/google
+// @desc    Authenticate with Google
+// @access  Public
+router.get('/google', (req, res, next) => {
+    console.log("Google authentication initiated");
+    next();
+}, passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+// @route   GET api/users/google/callback
+// @desc    Google auth callback
+// @access  Public
+router.get('/google/callback',
+    (req, res, next) => {
+        console.log("Google callback invoked");
+        next();
+    },
+    passport.authenticate('google', { failureRedirect: '/' }),
+    (req, res) => {
+        console.log("Google authentication successful");
+        // Successful authentication, redirect home.
+        res.redirect('/rogals'); // Change this to the desired route after successful login
+    }
+);
+
+// @route   GET api/users/logout
+// @desc    Logout user
+// @access  Public
+router.get('/logout', (req, res) => {
+    req.logout(function (err) {
+        if (err) {
+            return next(err);
+        }
+        res.redirect('/');
+    });
 });
 
 export default router;
