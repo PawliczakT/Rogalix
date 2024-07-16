@@ -77,7 +77,7 @@ router.get('/auth/google/callback',
     (req, res) => {
         console.log("Google authentication successful");
         // Successful authentication, redirect home.
-        res.redirect('/'); // Change this to the desired route after successful login
+        res.redirect('http://localhost:3000/rogals'); // Change this to the desired route after successful login
     }
 );
 
