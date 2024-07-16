@@ -31,11 +31,14 @@ mongoose.connect(db)
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.log(err));
 
-// Express session middleware
 app.use(session({
-    secret: 'your_secret_key', // replace with your own secret
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // use secure cookies in production
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
 
 // Passport middleware
