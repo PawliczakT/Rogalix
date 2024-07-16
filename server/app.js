@@ -5,13 +5,15 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import passport from 'passport';
+import session from 'express-session';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import session from 'express-session'; // Import express-session
 import { mongoURI as db } from './config/config.js';
 import users from './routes/auth.js';
 import rogals from './routes/rogals.js';
 import gustometr from './routes/gustometr.js';
+import { configurePassport } from './config/passport.js';
+import auth from "./routes/auth.js"; // Correct import
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,33 +26,30 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// Express session middleware
-app.use(
-    session({
-        secret: process.env.SESSION_SECRET,
-        resave: false,
-        saveUninitialized: true,
-        cookie: { secure: false }, // Set to true if using https
-    })
-);
-
 // Connect to MongoDB
 mongoose.connect(db)
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.log(err));
 
+// Express session middleware
+app.use(session({
+    secret: 'your_secret_key', // replace with your own secret
+    resave: false,
+    saveUninitialized: true
+}));
+
 // Passport middleware
 app.use(passport.initialize());
-app.use(passport.session()); // Add passport.session() middleware
+app.use(passport.session());
 
 // Passport Config
-import passportConfig from './config/passport.js';
-passportConfig(passport);
+configurePassport(passport);
 
 // Use Routes
 app.use('/api/users', users);
 app.use('/api/rogals', rogals);
 app.use('/api/gustometr', gustometr);
+app.use('/api', auth);
 
 // Serve static assets if in production
 if (process.env.NODE_ENV === 'production') {

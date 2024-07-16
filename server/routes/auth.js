@@ -68,7 +68,7 @@ router.get('/google', (req, res, next) => {
 // @route   GET api/users/google/callback
 // @desc    Google auth callback
 // @access  Public
-router.get('/google/callback',
+router.get('/auth/google/callback',
     (req, res, next) => {
         console.log("Google callback invoked");
         next();
@@ -77,7 +77,7 @@ router.get('/google/callback',
     (req, res) => {
         console.log("Google authentication successful");
         // Successful authentication, redirect home.
-        res.redirect('/rogals'); // Change this to the desired route after successful login
+        res.redirect('/'); // Change this to the desired route after successful login
     }
 );
 
