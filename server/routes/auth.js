@@ -76,9 +76,8 @@ router.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/' }),
     (req, res) => {
         console.log("Google authentication successful");
-        // Successful authentication, redirect home with token
-        const token = req.user.token;
-        res.redirect(`http://localhost:3000?token=${token}`); // Redirect to frontend with token
+        // Successful authentication, redirect to home with token
+        res.redirect(`http://localhost:3000/?token=${req.user.tokens[0].token}`);
     }
 );
 

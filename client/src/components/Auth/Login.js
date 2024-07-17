@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { Container, TextField, Button, Typography, Box } from '@mui/material';
+import Cookies from 'js-cookie';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -19,6 +20,14 @@ const Login = () => {
             setError(err.response.data.msg);
         }
     };
+
+    useEffect(() => {
+        const token = Cookies.get('token');
+        if (token) {
+            localStorage.setItem('token', token);
+            navigate('/rogals');
+        }
+    }, [navigate]);
 
     return (
         <Container>
