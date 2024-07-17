@@ -22,7 +22,7 @@ const UserRatings = () => {
                 setRatings(res.data);
             } catch (err) {
                 console.error(err);
-                setError('Failed to fetch ratings');
+                setError('Nie udało się pobrać ocen');
             }
         };
 
@@ -31,7 +31,7 @@ const UserRatings = () => {
 
     const handleEdit = (rating) => {
         setSelectedRating(rating);
-        setNewRating(rating.rating);
+        setNewRating(rating.rating !== 'Brak oceny' ? rating.rating : '');
     };
 
     const handleUpdate = async (e) => {
@@ -43,7 +43,7 @@ const UserRatings = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
-            setMessage('Ocena zaktualizowana pomyślnie');
+            setMessage('Oceniono pomyślnie');
             setError('');
             setSelectedRating(null);
             setNewRating('');
@@ -57,7 +57,7 @@ const UserRatings = () => {
             setRatings(res.data);
         } catch (err) {
             console.error(err);
-            setError('Nie udało się zaktualizować oceny');
+            setError('Nie udało się ocenić rogala');
             setMessage('');
         }
     };

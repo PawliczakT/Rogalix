@@ -176,20 +176,15 @@ router.put('/approve/:id', [auth, adminAuth], async (req, res) => {
 // @access  Private
 router.get('/my-ratings', auth, async (req, res) => {
     try {
-        const rogals = await Rogal.find({ 'ratings.user': req.user.id }).populate('ratings.user', 'name');
+        const rogals = await Rogal.find().populate('ratings.user', 'name');
 
         const userRatings = rogals.map((rogal) => {
-            const rating = rogal.ratings.find((r) => String(r.user._id) === String(req.user.id));
-
-            // Add logging to verify rating retrieval
-            console.log(`Rogal: ${rogal.name}`);
-            console.log('Ratings:', rogal.ratings);
-            console.log('User Rating:', rating);
+            const userRating = rogal.ratings.find((r) => String(r.user._id) === String(req.user.id));
 
             return {
                 rogalId: rogal._id,
                 rogalName: rogal.name,
-                rating: rating ? rating.rating : 'No rating'
+                rating: userRating ? userRating.rating : 'Brak oceny'
             };
         });
 
