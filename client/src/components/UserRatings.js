@@ -6,7 +6,6 @@ const UserRatings = () => {
     const [ratings, setRatings] = useState([]);
     const [selectedRating, setSelectedRating] = useState(null);
     const [newRating, setNewRating] = useState('');
-    const [newComment, setNewComment] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
 
@@ -33,23 +32,21 @@ const UserRatings = () => {
     const handleEdit = (rating) => {
         setSelectedRating(rating);
         setNewRating(rating.rating);
-        setNewComment(rating.comment);
     };
 
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            await api.put(`/rogals/rating/${selectedRating.rogalId}`, { rating: newRating, comment: newComment }, {
+            await api.put(`/rogals/rating/${selectedRating.rogalId}`, { rating: newRating }, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            setMessage('Rating updated successfully');
+            setMessage('Ocena zaktualizowana pomyślnie');
             setError('');
             setSelectedRating(null);
             setNewRating('');
-            setNewComment('');
             // Refresh ratings
             const res = await api.get('/rogals/my-ratings', {
                 headers: {
@@ -60,7 +57,7 @@ const UserRatings = () => {
             setRatings(res.data);
         } catch (err) {
             console.error(err);
-            setError('Failed to update rating');
+            setError('Nie udało się zaktualizować oceny');
             setMessage('');
         }
     };
@@ -74,7 +71,7 @@ const UserRatings = () => {
                     <ListItem key={rating.rogalId} button onClick={() => handleEdit(rating)}>
                         <ListItemText
                             primary={`Rogal: ${rating.rogalName}`}
-                            secondary={`Rating: ${rating.rating !== null ? rating.rating : 'No rating'}, Comment: ${rating.comment !== null ? rating.comment : 'No comment'}`}
+                            secondary={`Ocena: ${rating.rating !== 'Brak oceny' ? rating.rating : 'Brak oceny'}`}
                         />
                     </ListItem>
                 ))}
@@ -82,7 +79,7 @@ const UserRatings = () => {
             {selectedRating && (
                 <form onSubmit={handleUpdate}>
                     <TextField
-                        label="New Rating"
+                        label="Nowa ocena (1-6)"
                         type="number"
                         fullWidth
                         margin="normal"
@@ -90,15 +87,8 @@ const UserRatings = () => {
                         onChange={(e) => setNewRating(e.target.value)}
                         required
                     />
-                    <TextField
-                        label="New Comment"
-                        fullWidth
-                        margin="normal"
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                    />
                     <Button type="submit" variant="contained" color="primary">
-                        Update Rating
+                        Zaktualizuj ocenę
                     </Button>
                 </form>
             )}
