@@ -13,6 +13,7 @@ import Top10QualityRogals from './components/Rogals/Top10QualityRogals';
 import UserRogalsMatrix from './components/UserRogalsMatrix';
 import Gustometr from './components/Gustometr';
 import UserAccount from './components/UserAccount'; // Import the new UserAccount component
+import UserRatings from './components/UserRatings'; // Import the new UserRatings component
 
 const App = () => {
     return (
@@ -31,6 +32,7 @@ const App = () => {
                 <Route path="/user-ratings-matrix" element={<UserRogalsMatrix />} />
                 <Route path="/gustometr" element={<Gustometr />} />
                 <Route path="/account" element={<UserAccount />} /> {/* Add the new route */}
+                <Route path="/my-ratings" element={<UserRatings />} /> {/* Add the new route */}
             </Routes>
         </Router>
     );

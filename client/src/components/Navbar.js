@@ -39,6 +39,7 @@ const Navbar = () => {
                 ) : (
                     <>
                         <Button color="inherit" component={Link} to="/account">Moje Konto</Button>
+                        <Button color="inherit" component={Link} to="/my-ratings">Moje Oceny</Button> {/* Add the new link */}
                         <Button color="inherit" onClick={handleLogout}>Wyloguj</Button>
                     </>
                 )}
