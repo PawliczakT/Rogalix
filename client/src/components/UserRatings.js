@@ -44,7 +44,7 @@ const UserRatings = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
-            setMessage('Rating updated successfully');
+            setMessage('Ocena zaktualizowana pomyślnie');
             setError('');
             setSelectedRating(null);
             setNewRating('');
@@ -58,7 +58,7 @@ const UserRatings = () => {
             setRatings(res.data);
         } catch (err) {
             console.error(err);
-            setError('Failed to update rating');
+            setError('Nie udało się zaktualizować oceny');
             setMessage('');
         }
     };
@@ -72,7 +72,7 @@ const UserRatings = () => {
                     <ListItem key={rating.rogalId} button onClick={() => handleEdit(rating)}>
                         <ListItemText
                             primary={`Rogal: ${rating.rogalName}`}
-                            secondary={`Rating: ${rating.rating !== 'No rating' ? rating.rating : 'No rating'}`}
+                            secondary={`Ocena: ${rating.rating !== 'Brak oceny' ? rating.rating : 'Brak oceny'}`}
                         />
                     </ListItem>
                 ))}
@@ -80,7 +80,7 @@ const UserRatings = () => {
             {selectedRating && (
                 <Box component="form" onSubmit={handleUpdate}>
                     <TextField
-                        label="New Rating"
+                        label="Nowa Ocena (1-6)"
                         type="number"
                         fullWidth
                         margin="normal"
@@ -89,7 +89,7 @@ const UserRatings = () => {
                         required
                     />
                     <Button type="submit" variant="contained" color="primary">
-                        Update Rating
+                        Zaktualizuj Ocenę
                     </Button>
                 </Box>
             )}

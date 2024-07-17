@@ -184,7 +184,7 @@ router.get('/my-ratings', auth, async (req, res) => {
             return {
                 rogalId: rogal._id,
                 rogalName: rogal.name,
-                rating: rating ? rating.rating : 'No rating',
+                rating: rating ? rating.rating : 'Brak oceny',
             };
         });
 
