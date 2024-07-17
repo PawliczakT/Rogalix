@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import { Container, TextField, Button, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { Container, Typography, List, ListItem, ListItemText, Box, TextField, Button, Alert } from '@mui/material';
 
 const UserRatings = () => {
     const [ratings, setRatings] = useState([]);
@@ -22,7 +22,7 @@ const UserRatings = () => {
                 setRatings(res.data);
             } catch (err) {
                 console.error(err);
-                setError('Nie udało się pobrać ocen');
+                setError('Failed to fetch ratings');
             }
         };
 
@@ -31,7 +31,7 @@ const UserRatings = () => {
 
     const handleEdit = (rating) => {
         setSelectedRating(rating);
-        setNewRating(rating.rating !== 'Brak oceny' ? rating.rating : '');
+        setNewRating(rating.rating !== 'No rating' ? rating.rating : '');
     };
 
     const handleUpdate = async (e) => {
@@ -43,7 +43,7 @@ const UserRatings = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
-            setMessage('Oceniono pomyślnie');
+            setMessage('Rating updated successfully');
             setError('');
             setSelectedRating(null);
             setNewRating('');
@@ -57,29 +57,29 @@ const UserRatings = () => {
             setRatings(res.data);
         } catch (err) {
             console.error(err);
-            setError('Nie udało się ocenić rogala');
+            setError('Failed to update rating');
             setMessage('');
         }
     };
 
     return (
         <Container>
-            {error && <Typography color="error">{error}</Typography>}
-            {message && <Typography color="primary">{message}</Typography>}
+            {error && <Alert severity="error">{error}</Alert>}
+            {message && <Alert severity="success">{message}</Alert>}
             <List>
-                {ratings.map(rating => (
+                {ratings.map((rating) => (
                     <ListItem key={rating.rogalId} button onClick={() => handleEdit(rating)}>
                         <ListItemText
                             primary={`Rogal: ${rating.rogalName}`}
-                            secondary={`Ocena: ${rating.rating !== 'Brak oceny' ? rating.rating : 'Brak oceny'}`}
+                            secondary={`Rating: ${rating.rating !== 'No rating' ? rating.rating : 'No rating'}`}
                         />
                     </ListItem>
                 ))}
             </List>
             {selectedRating && (
-                <form onSubmit={handleUpdate}>
+                <Box component="form" onSubmit={handleUpdate}>
                     <TextField
-                        label="Nowa ocena (1-6)"
+                        label="New Rating"
                         type="number"
                         fullWidth
                         margin="normal"
@@ -88,9 +88,9 @@ const UserRatings = () => {
                         required
                     />
                     <Button type="submit" variant="contained" color="primary">
-                        Zaktualizuj ocenę
+                        Update Rating
                     </Button>
-                </form>
+                </Box>
             )}
         </Container>
     );

@@ -10,6 +10,7 @@ const RogalDetails = () => {
     const [rating, setRating] = useState('');
     const [comment, setComment] = useState('');
     const [error, setError] = useState(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
         const fetchRogal = async () => {
@@ -21,7 +22,17 @@ const RogalDetails = () => {
             }
         };
 
+        const checkLoginStatus = async () => {
+            try {
+                await api.get('/users/me');
+                setIsLoggedIn(true);
+            } catch (err) {
+                setIsLoggedIn(false);
+            }
+        };
+
         fetchRogal();
+        checkLoginStatus();
     }, [id]);
 
     const onSubmit = async (e) => {
@@ -71,40 +82,43 @@ const RogalDetails = () => {
                         <Typography variant="body1">
                             Liczba głosów: {rogal.ratings ? rogal.ratings.length : 'No votes yet'}
                         </Typography>
-                        {rogal.image && <img src={rogal.image} alt={rogal.name} style={{ maxWidth: '100%' }} />}                    </CardContent>
+                        {rogal.image && <img src={rogal.image} alt={rogal.name} style={{ maxWidth: '100%' }} />}
+                    </CardContent>
                 </Card>
-                <Box sx={{ mt: 4 }}>
-                    <Typography variant="h5" component="h2" gutterBottom>
-                        Dodaj ocenę
-                    </Typography>
-                    {error && <Alert severity="error">{error}</Alert>}
-                    <form onSubmit={onSubmit}>
-                        <TextField
-                            type="number"
-                            label="Ocena"
-                            value={rating}
-                            onChange={(e) => setRating(e.target.value)}
-                            placeholder="Rating"
-                            inputProps={{ min: "1", max: "6", step: "0.5" }}
-                            fullWidth
-                            required
-                            sx={{ mb: 2 }}
-                        />
-                        <TextField
-                            label="Komentarz"
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            placeholder="Comment"
-                            multiline
-                            rows={4}
-                            fullWidth
-                            sx={{ mb: 2 }}
-                        />
-                        <Button variant="contained" color="primary" type="submit">
+                {isLoggedIn && (
+                    <Box sx={{ mt: 4 }}>
+                        <Typography variant="h5" component="h2" gutterBottom>
                             Dodaj ocenę
-                        </Button>
-                    </form>
-                </Box>
+                        </Typography>
+                        {error && <Alert severity="error">{error}</Alert>}
+                        <form onSubmit={onSubmit}>
+                            <TextField
+                                type="number"
+                                label="Ocena"
+                                value={rating}
+                                onChange={(e) => setRating(e.target.value)}
+                                placeholder="Rating"
+                                inputProps={{ min: "1", max: "6", step: "0.5" }}
+                                fullWidth
+                                required
+                                sx={{ mb: 2 }}
+                            />
+                            <TextField
+                                label="Komentarz"
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                                placeholder="Comment"
+                                multiline
+                                rows={4}
+                                fullWidth
+                                sx={{ mb: 2 }}
+                            />
+                            <Button variant="contained" color="primary" type="submit">
+                                Dodaj ocenę
+                            </Button>
+                        </form>
+                    </Box>
+                )}
             </Box>
         </Container>
     );

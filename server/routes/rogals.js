@@ -179,12 +179,12 @@ router.get('/my-ratings', auth, async (req, res) => {
         const rogals = await Rogal.find().populate('ratings.user', 'name');
 
         const userRatings = rogals.map((rogal) => {
-            const userRating = rogal.ratings.find((r) => String(r.user._id) === String(req.user.id));
+            const rating = rogal.ratings.find((r) => r.user && r.user._id.toString() === req.user.id);
 
             return {
                 rogalId: rogal._id,
                 rogalName: rogal.name,
-                rating: userRating ? userRating.rating : 'Brak oceny'
+                rating: rating ? rating.rating : 'No rating',
             };
         });
 
@@ -340,7 +340,7 @@ router.get('/statistics', async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
     try {
-        const rogals = await Rogal.find({approved: true}).populate('user', ['name']);
+        const rogals = await Rogal.find({ approved: true }).populate('user', ['name']);
         const rogalsWithAdditionalInfo = rogals.map(rogal => {
             const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
             const pricePerKg = (rogal.price / rogal.weight) * 1000;
