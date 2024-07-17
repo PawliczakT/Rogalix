@@ -18,6 +18,7 @@ const UserRatings = () => {
                         Authorization: `Bearer ${token}`
                     }
                 });
+
                 console.log('Fetched ratings:', res.data);
                 setRatings(res.data);
             } catch (err) {
