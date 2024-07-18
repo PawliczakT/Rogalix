@@ -29,8 +29,8 @@ const Navbar = () => {
                 <Button color="inherit" component={Link} to="/top10">Top 10 - jakość</Button>
                 <Button color="inherit" component={Link} to="/top10quality">Top 10 jakość / cena</Button>
                 {token && <Button color="inherit" component={Link} to="/add-rogal">Dodaj rogala</Button>}
-                <Button color="inherit" component={Link} to="/user-ratings-matrix">Kto jak oceniał</Button>
-                <Button color="inherit" component={Link} to="/gustometr">Gustometr</Button>
+                {token && <Button color="inherit" component={Link} to="/user-ratings-matrix">Kto jak oceniał</Button>}
+                {token && <Button color="inherit" component={Link} to="/gustometr">Gustometr</Button>}
                 {!token ? (
                     <>
                         <Button color="inherit" component={Link} to="/login">Zaloguj</Button>
@@ -39,7 +39,7 @@ const Navbar = () => {
                 ) : (
                     <>
                         <Button color="inherit" component={Link} to="/account">Moje Konto</Button>
-                        <Button color="inherit" component={Link} to="/my-ratings">Moje Oceny</Button> {/* Add the new link */}
+                        <Button color="inherit" component={Link} to="/my-ratings">Moje Oceny</Button>
                         <Button color="inherit" onClick={handleLogout}>Wyloguj</Button>
                     </>
                 )}
