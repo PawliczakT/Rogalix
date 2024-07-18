@@ -6,19 +6,15 @@ import { Container, TextField, Button, Typography } from '@mui/material';
 const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [confirmEmail, setConfirmEmail] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/users/register', { name, email, password });
-            // Automatyczne logowanie po rejestracji
-            const res = await api.post('/users/login', { email, password });
-            localStorage.setItem('token', res.data.token);
-            window.location.href = '/rogals';
-            // window.location.reload();
+            await api.post('/users/register', { name, email, confirmEmail });
+            navigate('/login');  // Redirect to login page after successful registration
         } catch (err) {
             setError(err.response.data.msg);
         }
@@ -46,12 +42,12 @@ const Register = () => {
                     required
                 />
                 <TextField
-                    label="Hasło"
-                    type="password"
+                    label="Potwierdź Email"
+                    type="email"
                     fullWidth
                     margin="normal"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={confirmEmail}
+                    onChange={(e) => setConfirmEmail(e.target.value)}
                     required
                 />
                 <Button type="submit" variant="contained" color="primary">

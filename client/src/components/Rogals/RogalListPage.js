@@ -13,8 +13,15 @@ const RogalListPage = () => {
     useEffect(() => {
         const fetchRogals = async () => {
             try {
-                const userRes = await api.get('/users/me');
-                const isAdmin = userRes.data.role === 'admin';
+                // Try fetching user details
+                let isAdmin = false;
+                try {
+                    const userRes = await api.get('/users/me');
+                    isAdmin = userRes.data.role === 'admin';
+                } catch (error) {
+                    // If fetching user details fails, assume the user is not logged in
+                    console.error('User not logged in:', error);
+                }
                 setIsAdmin(isAdmin);
 
                 const res = isAdmin ? await api.get('/rogals/admin') : await api.get('/rogals');
@@ -25,7 +32,7 @@ const RogalListPage = () => {
                 setAveragePrice(statsRes.data.averagePrice);
                 setAverageWeight(statsRes.data.averageWeight);
             } catch (err) {
-                console.error(err.response.data);
+                console.error(err.response?.data || err.message);
             }
         };
 
@@ -37,7 +44,7 @@ const RogalListPage = () => {
             await api.delete(`/rogals/${id}`);
             setRogals(rogals.filter((rogal) => rogal._id !== id));
         } catch (err) {
-            console.error(err.response.data);
+            console.error(err.response?.data || err.message);
         }
     };
 
@@ -49,7 +56,7 @@ const RogalListPage = () => {
             );
             setRogals(updatedRogals);
         } catch (err) {
-            console.error(err.response.data);
+            console.error(err.response?.data || err.message);
         }
     };
 
@@ -65,7 +72,6 @@ const RogalListPage = () => {
 
     return (
         <Container>
-            <p></p>
             <Typography variant="h4" component="h1" gutterBottom>
                 Wszystkie rogale
             </Typography>

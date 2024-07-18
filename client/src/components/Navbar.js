@@ -25,19 +25,23 @@ const Navbar = () => {
                     Rogalix
                 </Typography>
                 <Button color="inherit" component={Link} to="/">Statystyki</Button>
-                <Button color="inherit" component={Link} to="/rogals">Lista ROgali</Button>
+                <Button color="inherit" component={Link} to="/rogals">Lista Rogali</Button>
                 <Button color="inherit" component={Link} to="/top10">Top 10 - jakość</Button>
                 <Button color="inherit" component={Link} to="/top10quality">Top 10 jakość / cena</Button>
                 {token && <Button color="inherit" component={Link} to="/add-rogal">Dodaj rogala</Button>}
-                <Button color="inherit" component={Link} to="/user-ratings-matrix">Kto jak oceniał</Button>
-                <Button color="inherit" component={Link} to="/gustometr">Gustometr</Button>
+                {token && <Button color="inherit" component={Link} to="/user-ratings-matrix">Kto jak oceniał</Button>}
+                {token && <Button color="inherit" component={Link} to="/gustometr">Gustometr</Button>}
                 {!token ? (
                     <>
                         <Button color="inherit" component={Link} to="/login">Zaloguj</Button>
                         <Button color="inherit" component={Link} to="/register">Zarejestruj</Button>
                     </>
                 ) : (
-                    <Button color="inherit" onClick={handleLogout}>Wyloguj</Button>
+                    <>
+                        <Button color="inherit" component={Link} to="/account">Moje Konto</Button>
+                        <Button color="inherit" component={Link} to="/my-ratings">Moje Oceny</Button>
+                        <Button color="inherit" onClick={handleLogout}>Wyloguj</Button>
+                    </>
                 )}
             </Toolbar>
         </AppBar>

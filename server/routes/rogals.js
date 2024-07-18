@@ -171,6 +171,31 @@ router.put('/approve/:id', [auth, adminAuth], async (req, res) => {
     }
 });
 
+// @route   GET api/rogals/my-ratings
+// @desc    Get logged-in user's ratings
+// @access  Private
+router.get('/my-ratings', auth, async (req, res) => {
+    try {
+        const rogals = await Rogal.find().populate('ratings.user', 'name');
+
+        const userRatings = rogals.map((rogal) => {
+            const rating = rogal.ratings.find((r) => r.user && r.user._id.toString() === req.user.id);
+
+            return {
+                rogalId: rogal._id,
+                rogalName: rogal.name,
+                rating: rating ? rating.rating : 'Brak oceny',
+            };
+        });
+
+        console.log('User Ratings:', userRatings);
+        res.json(userRatings);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
 router.get('/user-ratings', async (req, res) => {
     try {
         const rogals = await Rogal.find().populate('ratings.user', 'name');
@@ -315,7 +340,7 @@ router.get('/statistics', async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
     try {
-        const rogals = await Rogal.find({approved: true}).populate('user', ['name']);
+        const rogals = await Rogal.find({ approved: true }).populate('user', ['name']);
         const rogalsWithAdditionalInfo = rogals.map(rogal => {
             const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
             const pricePerKg = (rogal.price / rogal.weight) * 1000;
@@ -393,13 +418,13 @@ router.delete('/:id', [auth, adminAuth], async (req, res) => {
 // @desc    Update rating
 // @access  Private
 router.put('/rating/:id', auth, async (req, res) => {
-    const {rating, comment} = req.body;
+    const { rating, comment } = req.body;
 
     try {
         let rogal = await Rogal.findById(req.params.id);
 
         if (!rogal) {
-            return res.status(404).json({msg: 'Rogal not found'});
+            return res.status(404).json({ msg: 'Rogal not found' });
         }
 
         const userRating = rogal.ratings.find(r => r.user.toString() === req.user.id);
@@ -410,7 +435,7 @@ router.put('/rating/:id', auth, async (req, res) => {
             userRating.comment = comment;
         } else {
             // Add new rating
-            rogal.ratings.unshift({user: req.user.id, rating, comment});
+            rogal.ratings.unshift({ user: req.user.id, rating, comment });
         }
 
         await rogal.save();

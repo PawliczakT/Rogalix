@@ -2,16 +2,34 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import { secretOrKey } from '../config/config.js';
+import crypto from 'crypto';
+import nodemailer from 'nodemailer';
+
+const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PASSWORD
+    }
+});
 
 const registerUser = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email } = req.body;
 
     try {
+        // Check if email already exists
         let user = await User.findOne({ email });
-
         if (user) {
-            return res.status(400).json({ msg: 'User already exists' });
+            return res.status(400).json({ msg: 'Taki mail już jest w bazie, użyj innego lub zaloguj się.' });
         }
+
+        // Check if name already exists
+        user = await User.findOne({ name });
+        if (user) {
+            return res.status(400).json({ msg: 'Taki użytkownik już istnieje, wybierz inną nazwę lub zaloguj się.' });
+        }
+
+        const password = crypto.randomBytes(8).toString('hex');
 
         user = new User({
             name,
@@ -34,6 +52,21 @@ const registerUser = async (req, res) => {
 
         user.tokens = user.tokens.concat({ token });
         await user.save();
+
+        // Send email with the generated password
+        const mailOptions = {
+            to: email,
+            subject: 'Twoje hasło do Rogalix.pl',
+            text: `Witaj ${name},\n\nTwoje konto na www.rogalix.pl zostało stworzone. Oto Twoje hasło: ${password}\n\nMożesz je zmienić po zalogowaniu się.`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email:', error);
+            } else {
+                console.log('Email sent:', info.response);
+            }
+        });
 
         res.json({ token });
     } catch (err) {
