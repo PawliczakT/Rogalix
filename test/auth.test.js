@@ -1,9 +1,19 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: '.env.test' });
 import request from 'supertest';
 import { expect } from 'chai';
+import mongoose from 'mongoose';
+import User from '../server/models/User.js';
+import bcrypt from 'bcryptjs';
+
+dotenv.config({ path: '.env.test' });
 
 let app;
+
+const testUser = {
+    name: `Existing Test User ${Date.now()}`,
+    email: `existingtestuser${Date.now()}@example.com`,
+    password: 'password123'
+};
 
 before(async function () {
     this.timeout(10000); // Increase timeout to 10 seconds
@@ -21,16 +31,41 @@ before(async function () {
     }
 });
 
-describe('Auth API', () => {
-    const uniqueEmail = `testuser${Date.now()}@example.com`; // Generate a unique email
+before(async function () {
+    // Clean up the users collection before running tests
+    await User.deleteMany({});
 
+    // Create a test user
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(testUser.password, salt);
+
+    const user = new User({
+        name: testUser.name,
+        email: testUser.email,
+        password: hashedPassword
+    });
+
+    await user.save();
+});
+
+after(async function () {
+    // Close the MongoDB connection after tests
+    await mongoose.connection.close();
+    // Ensure the process exits
+    process.exit(0);
+});
+
+describe('Auth API', () => {
     it('should register a new user', (done) => {
+        const uniqueEmail = `testuser${Date.now()}@example.com`; // Generate a unique email
+
         request(app)
             .post('/api/users/register')
             .send({
-                name: 'Test User',
+                name: `Test User ${Date.now()}`,
                 email: uniqueEmail,
-                password: 'password123'
+                confirmEmail: uniqueEmail, // Add confirmEmail
+                password: 'password123' // Use the fixed password
             })
             .expect(200)
             .end((err, res) => {
@@ -43,12 +78,33 @@ describe('Auth API', () => {
             });
     });
 
+    it('should not register an existing user', (done) => {
+        request(app)
+            .post('/api/users/register')
+            .send({
+                name: testUser.name,
+                email: testUser.email,
+                confirmEmail: testUser.email, // Add confirmEmail
+                password: testUser.password // Use the fixed password
+            })
+            .expect(400) // Expecting a bad request response
+            .end((err, res) => {
+                if (err) {
+                    console.log(res.body); // Log the response body to see the error details
+                    return done(err);
+                }
+                expect(res.body).to.have.property('msg');
+                expect(res.body.msg).to.equal('Taki mail już jest w bazie, użyj innego lub zaloguj się.');
+                done();
+            });
+    });
+
     it('should login an existing user', (done) => {
         request(app)
             .post('/api/users/login')
             .send({
-                email: uniqueEmail, // Use the same unique email generated above
-                password: 'password123'
+                email: testUser.email, // Use the same email as the test user
+                password: testUser.password // Use the fixed password
             })
             .expect(200)
             .end((err, res) => {
