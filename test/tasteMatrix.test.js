@@ -98,7 +98,6 @@ after(async () => {
     await User.deleteMany({});
     await Rogal.deleteMany({});
     await mongoose.connection.close();
-    process.exit(0); // Ensure the process exits
 });
 
 describe('TasteMatrix API', () => {

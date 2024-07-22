@@ -51,8 +51,6 @@ before(async function () {
 after(async function () {
     // Close the MongoDB connection after tests
     await mongoose.connection.close();
-    // Ensure the process exits
-    process.exit(0);
 });
 
 describe('Auth API', () => {
