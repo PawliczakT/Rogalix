@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: '.env.test' });
 import request from 'supertest';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import mongoose from 'mongoose';
 import Rogal from '../server/models/Rogal.js';
 import User from '../server/models/User.js';
+
+dotenv.config({path: '.env.test'});
 
 let app;
 let token1, token2, user1, user2;
@@ -22,7 +23,8 @@ before(async function () {
             .send({
                 name: 'User 1',
                 email: 'user1@example.com',
-                password: 'password123'
+                password: 'password123',
+                confirmEmail: 'user1@example.com'
             });
 
         await request(app)
@@ -35,7 +37,7 @@ before(async function () {
                 token1 = res.body.token;
             });
 
-        user1 = await User.findOne({ email: 'user1@example.com' });
+        user1 = await User.findOne({email: 'user1@example.com'});
 
         // Register and login second user
         await request(app)
@@ -43,7 +45,8 @@ before(async function () {
             .send({
                 name: 'User 2',
                 email: 'user2@example.com',
-                password: 'password123'
+                password: 'password123',
+                confirmEmail: 'user2@example.com'
             });
 
         await request(app)
@@ -56,7 +59,7 @@ before(async function () {
                 token2 = res.body.token;
             });
 
-        user2 = await User.findOne({ email: 'user2@example.com' });
+        user2 = await User.findOne({email: 'user2@example.com'});
 
         // Add some rogals
         const rogal1 = new Rogal({
@@ -66,8 +69,8 @@ before(async function () {
             weight: 200,
             user: user1._id,
             ratings: [
-                { user: user1._id, rating: 5 },
-                { user: user2._id, rating: 4 },
+                {user: user1._id, rating: 5},
+                {user: user2._id, rating: 4},
             ]
         });
         await rogal1.save();
@@ -79,8 +82,8 @@ before(async function () {
             weight: 250,
             user: user2._id,
             ratings: [
-                { user: user1._id, rating: 3 },
-                { user: user2._id, rating: 2 },
+                {user: user1._id, rating: 3},
+                {user: user2._id, rating: 2},
             ]
         });
         await rogal2.save();
