@@ -8,9 +8,7 @@
     "heroku-postbuild": "npm run install-server && npm run install-client && npm run build-client",
     "install-server": "cd server && npm install",
     "install-client": "cd client && npm install",
-    "build-client": "cd client && npm run build",
-    "test": "mocha --require @babel/register 'test/*.test.js'",
-    "test:client": "react-scripts ../test"
+    "build-client": "cd client && npm run build"
   },
   "dependencies": {
     "@aws-sdk/client-rekognition": "^3.614.0",
