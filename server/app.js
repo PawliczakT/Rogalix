@@ -1,13 +1,11 @@
-import dotenv from 'dotenv';
-dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
-import passport from 'passport';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import { mongoURI as db } from './config/config.js';
+import {fileURLToPath} from 'url';
+import passport from 'passport';
+import configurePassport from './config/passport.js';
 import users from './routes/auth.js';
 import rogals from './routes/rogals.js';
 import gustometr from './routes/gustometr.js';
@@ -20,10 +18,11 @@ const app = express();
 app.use(cors());
 
 // Body parser middleware
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 // Connect to MongoDB
+const db = process.env.MONGO_URI;
 mongoose.connect(db)
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.log(err));
@@ -32,8 +31,7 @@ mongoose.connect(db)
 app.use(passport.initialize());
 
 // Passport Config
-import passportConfig from './config/passport.js';
-passportConfig(passport);
+configurePassport(passport);
 
 // Use Routes
 app.use('/api/users', users);
@@ -42,10 +40,10 @@ app.use('/api/gustometr', gustometr);
 
 // Serve static assets if in production
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static('client/build'));
+    app.use(express.static(path.join(__dirname, '../../client/build')));
 
     app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+        res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'));
     });
 }
 
