@@ -3,12 +3,13 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import path from 'path';
-import {fileURLToPath} from 'url';
-import passport from './config/passport.js';
+import { fileURLToPath } from 'url';
+import passport from 'passport'; // Importuj passport
+import configurePassport from './config/passport.js'; // Importuj funkcję konfiguracji passport
 import users from './routes/auth.js';
 import rogals from './routes/rogals.js';
 import gustometr from './routes/gustometr.js';
-import User from './models/User.js';
+import User from './models/User.js'; // Importuj model User
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +19,7 @@ const app = express();
 app.use(cors());
 
 // Body parser middleware
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // Connect to MongoDB
@@ -29,6 +30,9 @@ mongoose.connect(db)
 
 // Passport middleware
 app.use(passport.initialize());
+
+// Passport Config
+configurePassport(passport);
 
 // Use Routes
 app.use('/api/users', users);
