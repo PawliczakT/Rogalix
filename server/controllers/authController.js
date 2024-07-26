@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import { secretOrKey } from '../config/config.js';
+import {secretOrKey} from '../config/config.js';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 
@@ -14,19 +14,19 @@ const transporter = nodemailer.createTransport({
 });
 
 const registerUser = async (req, res) => {
-    const { name, email } = req.body;
+    const {name, email} = req.body;
 
     try {
         // Check if email already exists
-        let user = await User.findOne({ email });
+        let user = await User.findOne({email});
         if (user) {
-            return res.status(400).json({ msg: 'Taki mail już jest w bazie, użyj innego lub zaloguj się.' });
+            return res.status(400).json({msg: 'Taki mail już jest w bazie, użyj innego lub zaloguj się.'});
         }
 
         // Check if name already exists
-        user = await User.findOne({ name });
+        user = await User.findOne({name});
         if (user) {
-            return res.status(400).json({ msg: 'Taki użytkownik już istnieje, wybierz inną nazwę lub zaloguj się.' });
+            return res.status(400).json({msg: 'Taki użytkownik już istnieje, wybierz inną nazwę lub zaloguj się.'});
         }
 
         const password = crypto.randomBytes(8).toString('hex');
@@ -47,10 +47,10 @@ const registerUser = async (req, res) => {
         const token = jwt.sign(
             payload,
             secretOrKey,
-            { expiresIn: 3600 }
+            {expiresIn: 3600}
         );
 
-        user.tokens = user.tokens.concat({ token });
+        user.tokens = user.tokens.concat({token});
         await user.save();
 
         // Send email with the generated password
@@ -68,7 +68,7 @@ const registerUser = async (req, res) => {
             }
         });
 
-        res.json({ token });
+        res.json({token});
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
@@ -76,19 +76,19 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
     try {
-        let user = await User.findOne({ email });
+        let user = await User.findOne({email});
 
         if (!user) {
-            return res.status(400).json({ msg: 'Invalid credentials' });
+            return res.status(400).json({msg: 'Invalid credentials'});
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
-            return res.status(400).json({ msg: 'Invalid credentials' });
+            return res.status(400).json({msg: 'Invalid credentials'});
         }
 
         const payload = {
@@ -98,13 +98,13 @@ const loginUser = async (req, res) => {
         const token = jwt.sign(
             payload,
             secretOrKey,
-            { expiresIn: 3600 }
+            {expiresIn: 3600}
         );
 
-        user.tokens = user.tokens.concat({ token });
+        user.tokens = user.tokens.concat({token});
         await user.save();
 
-        res.json({ token });
+        res.json({token});
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
