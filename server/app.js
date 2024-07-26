@@ -4,11 +4,11 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import path from 'path';
 import {fileURLToPath} from 'url';
-import passport from 'passport';
-import configurePassport from './config/passport.js';
+import passport from './config/passport.js';
 import users from './routes/auth.js';
 import rogals from './routes/rogals.js';
 import gustometr from './routes/gustometr.js';
+import User from './models/User.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,9 +30,6 @@ mongoose.connect(db)
 // Passport middleware
 app.use(passport.initialize());
 
-// Passport Config
-configurePassport(passport);
-
 // Use Routes
 app.use('/api/users', users);
 app.use('/api/rogals', rogals);
@@ -40,10 +37,10 @@ app.use('/api/gustometr', gustometr);
 
 // Serve static assets if in production
 if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../../client/build')));
+    app.use(express.static(path.join(__dirname, '../client/build')));
 
     app.get('*', (req, res) => {
-        res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'));
+        res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
     });
 }
 
