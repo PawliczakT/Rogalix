@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {BrowserRouter as Router, Navigate, Route, Routes} from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import RogalListPage from './components/Rogals/RogalListPage';
@@ -14,6 +14,7 @@ import UserRogalsMatrix from './components/UserRogalsMatrix';
 import Gustometr from './components/Gustometr';
 import UserAccount from './components/UserAccount';
 import UserRatings from './components/UserRatings';
+import Footer from './components/Footer';
 import api from './api';
 
 const App = () => {
@@ -33,22 +34,24 @@ const App = () => {
 
     return (
         <Router>
-            <Navbar isLoggedIn={isLoggedIn} />
+            <Navbar isLoggedIn={isLoggedIn}/>
             <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/rogals" element={<RogalListPage />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/rogals/:id" element={<RogalDetails />} />
-                <Route path="/rogals/edit/:id" element={<EditRogal />} />
-                <Route path="/top10" element={<Top10Rogals />} />
-                <Route path="/top10quality" element={<Top10QualityRogals />} />
-                <Route path="/add-rogal" element={isLoggedIn ? <AddRogal /> : <Navigate to="/login" />} />
-                <Route path="/user-ratings-matrix" element={isLoggedIn ? <UserRogalsMatrix /> : <Navigate to="/login" />} />
-                <Route path="/gustometr" element={isLoggedIn ? <Gustometr /> : <Navigate to="/login" />} />
-                <Route path="/account" element={isLoggedIn ? <UserAccount /> : <Navigate to="/login" />} />
-                <Route path="/my-ratings" element={isLoggedIn ? <UserRatings /> : <Navigate to="/login" />} />
+                <Route path="/" element={<Home/>}/>
+                <Route path="/rogals" element={<RogalListPage/>}/>
+                <Route path="/login" element={<Login/>}/>
+                <Route path="/register" element={<Register/>}/>
+                <Route path="/rogals/:id" element={<RogalDetails/>}/>
+                <Route path="/rogals/edit/:id" element={<EditRogal/>}/>
+                <Route path="/top10" element={<Top10Rogals/>}/>
+                <Route path="/top10quality" element={<Top10QualityRogals/>}/>
+                <Route path="/add-rogal" element={isLoggedIn ? <AddRogal/> : <Navigate to="/login"/>}/>
+                <Route path="/user-ratings-matrix"
+                       element={isLoggedIn ? <UserRogalsMatrix/> : <Navigate to="/login"/>}/>
+                <Route path="/gustometr" element={isLoggedIn ? <Gustometr/> : <Navigate to="/login"/>}/>
+                <Route path="/account" element={isLoggedIn ? <UserAccount/> : <Navigate to="/login"/>}/>
+                <Route path="/my-ratings" element={isLoggedIn ? <UserRatings/> : <Navigate to="/login"/>}/>
             </Routes>
+            <Footer/>
         </Router>
     );
 };
