@@ -30,6 +30,7 @@
     "nodemailer": "^6.9.14",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
+    "simple-git": "^3.25.0",
     "supertest": "^7.0.0"
   },
   "devDependencies": {

@@ -10,11 +10,11 @@ import {mongoURI as db} from './config/config.js';
 import users from './routes/auth.js';
 import rogals from './routes/rogals.js';
 import gustometr from './routes/gustometr.js';
-import gitInfo from './routes/gitInfo.js';
 import passportConfig from './config/passport.js';
+import simpleGit from 'simple-git';
 
 dotenv.config();
-
+const git = simpleGit();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -36,7 +36,22 @@ app.use('/api/users', users);
 app.use('/api/rogals', rogals);
 app.use('/api/gustometr', gustometr);
 
-app.use('/api/git-info', gitInfo);
+app.get('/api/git-info', async (req, res) => {
+    try {
+        const branchSummary = await git.branchLocal();
+        const currentBranch = branchSummary.current;
+        const commitSummary = await git.log({ n: 1 });
+        const latestCommitHash = commitSummary.latest.hash;
+
+        res.json({
+            branch: currentBranch,
+            commit: latestCommitHash,
+        });
+    } catch (err) {
+        console.error('Failed to get Git info', err);
+        res.status(500).json({ error: 'Failed to get Git info' });
+    }
+});
 
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static('client/build'));

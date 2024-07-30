@@ -1,15 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Container, Typography } from '@mui/material';
+import api from '../api';
 
 const Footer = () => {
-    const [gitInfo, setGitInfo] = useState({ branch: '', commitHash: '' });
+    const [gitInfo, setGitInfo] = useState({ branch: '', commit: '' });
 
     useEffect(() => {
         const fetchGitInfo = async () => {
             try {
-                const response = await axios.get('/api/git-info');
-                setGitInfo(response.data);
+                const res = await api.get(`${process.env.REACT_APP_API_URL}/git-info`);
+                setGitInfo(res.data);
             } catch (err) {
                 console.error('Failed to fetch git info:', err);
             }
@@ -19,12 +18,28 @@ const Footer = () => {
     }, []);
 
     return (
-        <Container>
-            <Typography variant="body2" color="textSecondary" align="center">
-                Branch: {gitInfo.branch} | Commit: {gitInfo.commitHash}
-            </Typography>
-        </Container>
+        <div style={footerStyle}>
+            <p style={textStyle}>Branch: {gitInfo.branch}</p>
+            <p style={textStyle}>Commit: {gitInfo.commit}</p>
+        </div>
     );
+};
+
+const footerStyle = {
+    display: 'flex',
+    alignItems: 'right',
+    padding: '10px',
+    borderTop: '1px solid #e7e7e7',
+    left: '0',
+    bottom: '0',
+    width: '100%',
+    textAlign: 'right',
+};
+
+const textStyle = {
+    margin: '5px 0',
+    fontSize: '12px',
+    color: '#333',
 };
 
 export default Footer;
