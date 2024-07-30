@@ -27,18 +27,19 @@ const Footer = () => {
 
 const footerStyle = {
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'right',
     padding: '10px',
     borderTop: '1px solid #e7e7e7',
-    left: '0',
+    left: '10',
     bottom: '0',
     width: '100%',
-    textAlign: 'right',
+    textAlign: 'center',
 };
 
 const textStyle = {
     margin: '5px 0',
-    fontSize: '12px',
+    fontSize: '12px', // Zmniejsz rozmiar czcionki
     color: '#333',
 };
 
