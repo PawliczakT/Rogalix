@@ -47,6 +47,7 @@ const AddRogal = () => {
 
     return (
         <Container>
+            <p></p>
             <Typography variant="h4" component="h1" gutterBottom>
                 Dodaj rogala
             </Typography>

@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api';
-import { Container, Typography, Button, Box, Card, CardContent, CardActions } from '@mui/material';
+import { Container, Typography, Button, Box, Card, CardContent, CardActions, TextField } from '@mui/material';
 
 const RogalListPage = () => {
     const [rogals, setRogals] = useState([]);
     const [averagePrice, setAveragePrice] = useState(0);
     const [averageWeight, setAverageWeight] = useState(0);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchRogals = async () => {
             try {
-                // Try fetching user details
                 let isAdmin = false;
                 try {
                     const userRes = await api.get('/users/me');
                     isAdmin = userRes.data.role === 'admin';
                 } catch (error) {
-                    // If fetching user details fails, assume the user is not logged in
                     console.error('User not logged in:', error);
                 }
                 setIsAdmin(isAdmin);
@@ -70,13 +69,24 @@ const RogalListPage = () => {
         }
     };
 
+    const filteredRogals = rogals.filter(rogal =>
+        rogal.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        rogal.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <Container>
-            <Typography variant="h4" component="h1" gutterBottom>
-                Wszystkie rogale
-            </Typography>
+            <p></p>
+            <TextField
+                label="Szukaj"
+                variant="outlined"
+                fullWidth
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{ mb: 4 }}
+            />
             <Box sx={{ mt: 4 }}>
-                {rogals.map((rogal) => (
+                {filteredRogals.map((rogal) => (
                     <Card key={rogal._id} sx={{ mb: 2 }}>
                         <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
                             <Box sx={{ flexGrow: 1 }}>
