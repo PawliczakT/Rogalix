@@ -26,12 +26,15 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
           echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> .env
           echo "AWS_REGION=eu-central-1" >> .env
-          cat .env
+          cat .env # For debugging, remove this in production
 
       - name: Set up MongoDB
         uses: supercharge/mongodb-github-action@1.4.0
         with:
           mongodb-version: '4.4'
+
+      - name: Debug Environment Variables # Add this step to debug environment variables
+        run: printenv
 
       - name: Run tests
         env:
