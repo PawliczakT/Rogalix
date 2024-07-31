@@ -34,7 +34,7 @@ jobs:
           mongodb-version: '4.4'
 
       - name: Debug Environment Variables # Add this step to debug environment variables
-        run: printenv
+        run: cat .env
 
       - name: Run tests
         env:
