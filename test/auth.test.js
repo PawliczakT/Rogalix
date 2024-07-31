@@ -19,10 +19,6 @@ before(async function () {
     this.timeout(10000); // Increase timeout to 10 seconds
 
     try {
-        console.log("Environment Variables:");
-        console.log("AWS_REGION:", process.env.AWS_REGION);
-        console.log("MONGO_URI:", process.env.MONGO_URI);
-
         const importedApp = await import('../server/app.js'); // Use dynamic import
         app = importedApp.default; // Access the default export
     } catch (error) {

@@ -1,14 +1,12 @@
-import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import mongoose from 'mongoose';
-import { secretOrKey } from './config.js';
-
-const User = mongoose.model('users');
+import {ExtractJwt, Strategy as JwtStrategy} from 'passport-jwt';
+import {secretOrKey} from './config.js';
+import User from '../models/User.js'; // Ensure the User model is imported
 
 const opts = {};
 opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = secretOrKey;
 
-export default function(passport) {
+export default function (passport) {
     passport.use(
         new JwtStrategy(opts, (jwt_payload, done) => {
             User.findById(jwt_payload.id)
@@ -21,4 +19,4 @@ export default function(passport) {
                 .catch(err => console.log(err));
         })
     );
-};
+}
