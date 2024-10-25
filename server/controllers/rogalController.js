@@ -88,18 +88,30 @@ const getRogalStatistics = async (req, res) => {
 const getTop10Rogals = async (req, res) => {
     try {
         const rogals = await Rogal.find();
-        const top10Rogals = rogals.map((rogal) => {
+        const rogalsWithAnalytics = await Promise.all(rogals.map(async (rogal) => {
             const totalRatings = rogal.ratings.length;
-            const averageRating = totalRatings > 0 ? rogal.ratings.reduce((acc, rating) => acc + rating.rating, 0) / totalRatings : 0;
-            const pricePerKg = rogal.price && rogal.weight ? (rogal.price / rogal.weight) * 1000 : 0;
-            const qualityToPriceRatio = averageRating > 0 && rogal.price > 0 ? (averageRating / rogal.price) * 100 : 0;
+            const averageRating = totalRatings > 0 ?
+                rogal.ratings.reduce((acc, rating) => acc + rating.rating, 0) / totalRatings : 0;
+
+            const metrics = await rogalAnalytics.generateQualityMetrics({
+                name: rogal.name,
+                price: rogal.price,
+                weight: rogal.weight,
+                ratings: rogal.ratings,
+                averageRating
+            });
+
             return {
                 ...rogal._doc,
                 averageRating,
-                pricePerKg,
-                qualityToPriceRatio
+                pricePerKg: (rogal.price / rogal.weight) * 1000,
+                metrics
             };
-        }).sort((a, b) => b.averageRating - a.averageRating).slice(0, 10);
+        }));
+
+        const top10Rogals = rogalsWithAnalytics
+            .sort((a, b) => b.metrics.normalizedQualityScore - a.metrics.normalizedQualityScore)
+            .slice(0, 10);
 
         res.json(top10Rogals);
     } catch (err) {
@@ -128,6 +140,66 @@ const getTop10QualityRogals = async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
+    }
+};
+
+const analyzeRogalTrends = async (req, res) => {
+    try {
+        const rogals = await Rogal.find()
+            .populate('user', ['name'])
+            .populate('ratings.user', ['name']);
+
+        const rogalsWithMetrics = await Promise.all(rogals.map(async (rogal) => {
+            const metrics = await rogalAnalytics.generateQualityMetrics({
+                name: rogal.name,
+                price: rogal.price,
+                weight: rogal.weight,
+                ratings: rogal.ratings,
+                averageRating: rogal.averageRating,
+                pricePerKg: (rogal.price / rogal.weight) * 1000
+            });
+
+            return {
+                ...rogal.toObject(),
+                metrics
+            };
+        }));
+
+        const analysis = await rogalAnalytics.analyzeRogalTrends(rogalsWithMetrics);
+
+        res.json({
+            rogals: rogalsWithMetrics,
+            analysis
+        });
+    } catch (err) {
+        console.error('Error analyzing rogal trends:', err);
+        res.status(500).json({ error: err.message });
+    }
+};
+
+const analyzeUserPreferences = async (req, res) => {
+    try {
+        const rogals = await Rogal.find()
+            .populate('ratings.user', ['name']);
+
+        const allRatings = rogals.reduce((acc, rogal) => {
+            return acc.concat(rogal.ratings.map(rating => ({
+                ...rating.toObject(),
+                rogalName: rogal.name,
+                rogalPrice: rogal.price,
+                rogalWeight: rogal.weight
+            })));
+        }, []);
+
+        const analysis = await rogalAnalytics.analyzeUserPreferences(allRatings);
+
+        res.json({
+            ratings: allRatings,
+            analysis
+        });
+    } catch (err) {
+        console.error('Error analyzing user preferences:', err);
+        res.status(500).json({ error: err.message });
     }
 };
 

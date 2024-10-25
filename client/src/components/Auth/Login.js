@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
-import { Container, TextField, Button, Typography } from '@mui/material';
+import {
+    Container, TextField, Button, Typography, Box, Alert, Paper
+} from '@mui/material';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -12,19 +14,44 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await api.post('/users/login', { email, password });
-            localStorage.setItem('token', res.data.token);
-            window.location.href = '/rogals';
-            // window.location.reload();
+            // Najpierw spróbuj się zalogować
+            const loginResponse = await api.post('/users/login', { email, password });
+            const token = loginResponse.data.token;
+
+            if (!token) {
+                throw new Error('No token received');
+            }
+
+            // Zapisz token
+            localStorage.setItem('token', token);
+
+            // Ustaw token w headers
+            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+            // Zweryfikuj token natychmiast po zalogowaniu
+            try {
+                await api.get('/users/me');
+                console.log('Token verification successful');
+                navigate('/rogals');
+            } catch (verifyError) {
+                console.error('Token verification failed:', verifyError);
+                throw new Error('Token verification failed');
+            }
         } catch (err) {
-            setError(err.response.data.msg);
+            console.error('Login error:', err);
+            setError(err.response?.data?.msg || 'Błąd logowania');
+            localStorage.removeItem('token');
+            delete api.defaults.headers.common['Authorization'];
         }
     };
 
     return (
         <Container>
-
-            {error && <Typography color="error">{error}</Typography>}
+            {error && (
+                <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+                    {error}
+                </Alert>
+            )}
             <form onSubmit={handleSubmit}>
                 <TextField
                     label="Email"
@@ -44,7 +71,13 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                 />
-                <Button type="submit" variant="contained" color="primary">
+                <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    sx={{ mt: 2 }}
+                >
                     Zaloguj się
                 </Button>
             </form>

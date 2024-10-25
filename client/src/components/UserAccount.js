@@ -51,7 +51,7 @@ const UserAccount = () => {
                     autoComplete="off"
                 />
                 <Button type="submit" variant="contained" color="primary">
-                    Zakutalizuj Hasło
+                    Zaktualizuj Hasło
                 </Button>
             </form>
         </Container>

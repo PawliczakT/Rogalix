@@ -6,6 +6,8 @@ import Rogal from '../models/Rogal.js';
 import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {DetectLabelsCommand, RekognitionClient} from '@aws-sdk/client-rekognition';
 import dotenv from "dotenv";
+import {RogalAnalyzerService} from '../services/RogalAnalyzerService.js';
+const rogalAnalyzer = new RogalAnalyzerService();
 
 dotenv.config();
 
@@ -120,6 +122,45 @@ router.post(
         }
     }
 );
+
+router.get('/analytics', auth, async (req, res) => {
+    console.log('Analytics request received'); // debugging
+    try {
+        const rogals = await Rogal.find()
+            .populate('ratings.user')
+            .populate('user', ['name']);
+
+        console.log('Found rogals:', rogals.length); // debugging
+
+        const qualityMetrics = await calculateQualityMetrics(rogals);
+        console.log('Quality metrics calculated'); // debugging
+
+        const trends = await calculateTrends(rogals);
+        console.log('Trends calculated'); // debugging
+
+        const preferences = await analyzePreferences(rogals);
+        console.log('Preferences analyzed'); // debugging
+
+        const response = {
+            qualityMetrics,
+            trends,
+            preferences
+        };
+
+        console.log('Sending response:', response); // debugging
+        res.json(response);
+    } catch (err) {
+        console.error('Analytics error:', {
+            message: err.message,
+            stack: err.stack
+        });
+        res.status(500).json({
+            message: 'Błąd podczas generowania analiz',
+            error: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
+    }
+});
 
 // @route   GET api/rogals/admin
 // @desc    Get all rogals for admin
@@ -447,6 +488,103 @@ router.put('/rating/:id', auth, async (req, res) => {
     }
 });
 
+// @route   POST api/rogals/analyze
+// @desc    Analyze rogal image and data
+// @access  Private
+router.post('/analyze', [auth, upload.single('image')], async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ msg: 'Please upload an image' });
+        }
+
+        const metadata = {
+            name: req.body.name,
+            price: req.body.price,
+            weight: req.body.weight
+        };
+
+        // Analiza przez Claude przed zapisem do AWS
+        const analysisResult = await rogalAnalyzer.analyzeRogalImage(
+            req.file.buffer,
+            metadata
+        );
+
+        // Jeśli analiza przeszła pomyślnie, kontynuuj istniejący proces uploadowania do S3
+        const uploadParams = {
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: `${Date.now().toString()}-${req.file.originalname}`,
+            Body: req.file.buffer,
+            ContentType: req.file.mimetype,
+        };
+
+        await s3Client.send(new PutObjectCommand(uploadParams));
+        const imageUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
+
+        res.json({
+            analysis: analysisResult,
+            imageUrl,
+            success: true
+        });
+    } catch (err) {
+        console.error('Error analyzing rogal:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// @route   GET api/rogals/taste-analysis
+// @desc    Get advanced taste matrix analysis
+// @access  Private/Admin
+router.get('/taste-analysis', [auth, adminAuth], async (req, res) => {
+    try {
+        // Wykorzystaj istniejącą logikę generowania taste matrix
+        const rogals = await Rogal.find().populate('ratings.user');
+        // ... (twoja obecna logika tworzenia tasteMatrix)
+
+        // Dodaj analizę przez Claude
+        const analysis = await rogalAnalyzer.analyzeTasteMatrix(tasteMatrix);
+
+        res.json({
+            tasteMatrix,
+            analysis,
+            recommendations: analysis.recommendations // zakładając, że Claude zwraca rekomendacje
+        });
+    } catch (err) {
+        console.error('Error analyzing taste preferences:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// @route   GET api/rogals/quality-report/:id
+// @desc    Generate detailed quality report for a rogal
+// @access  Private
+router.get('/quality-report/:id', auth, async (req, res) => {
+    try {
+        const rogal = await Rogal.findById(req.params.id).populate('ratings.user');
+        if (!rogal) {
+            return res.status(404).json({ msg: 'Rogal not found' });
+        }
+
+        const averageRating = rogal.ratings.length ?
+            (rogal.ratings.reduce((sum, r) => sum + r.rating, 0) / rogal.ratings.length) : 0;
+
+        const rogalData = {
+            ...rogal.toObject(),
+            averageRating,
+            pricePerKg: (rogal.price / rogal.weight) * 1000
+        };
+
+        const report = await rogalAnalyzer.generateQualityReport(rogalData);
+
+        res.json({
+            rogal: rogalData,
+            qualityReport: report
+        });
+    } catch (err) {
+        console.error('Error generating quality report:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // @route   PUT api/rogals/:id
 // @desc    Update rogal
 // @access  Private/Admin
@@ -532,4 +670,141 @@ router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) =
     }
 });
 
+// Funkcje pomocnicze
+const calculateQualityMetrics = async (rogals) => {
+    const totalRogals = rogals.length;
+    const totalRatings = rogals.reduce((sum, rogal) => sum + rogal.ratings.length, 0);
+
+    // Średnie oceny
+    const averageRatings = rogals.map(rogal => {
+        const ratings = rogal.ratings.length > 0
+            ? rogal.ratings.reduce((sum, r) => sum + r.rating, 0) / rogal.ratings.length
+            : 0;
+        return {
+            name: rogal.name,
+            rating: ratings
+        };
+    });
+
+    // Ceny
+    const prices = rogals.map(r => ({
+        name: r.name,
+        price: r.price,
+        pricePerKg: (r.price / r.weight) * 1000
+    }));
+
+    return [
+        {
+            name: "Średnia jakość",
+            value: (averageRatings.reduce((sum, r) => sum + r.rating, 0) / totalRogals).toFixed(2),
+            description: "Średnia ocena wszystkich rogali"
+        },
+        {
+            name: "Liczba ocen",
+            value: totalRatings,
+            description: "Całkowita liczba wystawionych ocen"
+        },
+        {
+            name: "Najwyżej oceniany",
+            value: averageRatings.sort((a, b) => b.rating - a.rating)[0]?.name || 'Brak',
+            description: "Rogal z najwyższą średnią oceną"
+        },
+        {
+            name: "Najlepszy stosunek jakości do ceny",
+            value: prices.sort((a, b) =>
+                (averageRatings.find(r => r.name === b.name).rating / b.pricePerKg) -
+                (averageRatings.find(r => r.name === a.name).rating / a.pricePerKg)
+            )[0]?.name || 'Brak',
+            description: "Rogal z najlepszym stosunkiem jakości do ceny"
+        }
+    ];
+};
+
+const calculateTrends = async (rogals) => {
+    // Sortujemy rogale po dacie
+    const sortedRogals = rogals.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    // Obliczamy trendy dla ostatnich okresów
+    const periods = [
+        { label: "Ostatni miesiąc", days: 30 },
+        { label: "Ostatnie 3 miesiące", days: 90 },
+        { label: "Ostatnie 6 miesięcy", days: 180 }
+    ];
+
+    return periods.map(period => {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - period.days);
+
+        const recentRatings = sortedRogals
+            .flatMap(rogal => rogal.ratings)
+            .filter(rating => new Date(rating.date) > cutoffDate);
+
+        const averageRating = recentRatings.length > 0
+            ? recentRatings.reduce((sum, r) => sum + r.rating, 0) / recentRatings.length
+            : 0;
+
+        // Oblicz zmianę procentową
+        const previousPeriodRatings = sortedRogals
+            .flatMap(rogal => rogal.ratings)
+            .filter(rating => {
+                const ratingDate = new Date(rating.date);
+                return ratingDate <= cutoffDate && ratingDate > new Date(cutoffDate - period.days);
+            });
+
+        const previousAverage = previousPeriodRatings.length > 0
+            ? previousPeriodRatings.reduce((sum, r) => sum + r.rating, 0) / previousPeriodRatings.length
+            : averageRating;
+
+        const change = previousAverage === 0 ? 0 : ((averageRating - previousAverage) / previousAverage) * 100;
+
+        return {
+            period: period.label,
+            description: `Średnia ocena: ${averageRating.toFixed(2)}`,
+            change: change.toFixed(1)
+        };
+    });
+};
+
+const analyzePreferences = async (rogals) => {
+    // Analiza preferencji użytkowników
+    const allRatings = rogals.flatMap(rogal =>
+        rogal.ratings.map(rating => ({
+            rating: rating.rating,
+            price: rogal.price,
+            weight: rogal.weight,
+            pricePerKg: (rogal.price / rogal.weight) * 1000
+        }))
+    );
+
+    // Kategorie cenowe
+    const priceCategories = {
+        budget: { min: 0, max: 5 },
+        medium: { min: 5, max: 10 },
+        premium: { min: 10, max: Infinity }
+    };
+
+    const categorizePrice = (price) => {
+        if (price <= priceCategories.budget.max) return 'Ekonomiczne';
+        if (price <= priceCategories.medium.max) return 'Średnia półka';
+        return 'Premium';
+    };
+
+    // Analiza preferencji cenowych
+    const pricePreferences = Object.keys(priceCategories).map(category => {
+        const categoryRatings = allRatings.filter(r =>
+            categorizePrice(r.price) === category
+        );
+        const averageRating = categoryRatings.length > 0
+            ? categoryRatings.reduce((sum, r) => sum + r.rating, 0) / categoryRatings.length
+            : 0;
+
+        return {
+            category: categorizePrice(priceCategories[category].min),
+            insight: `Średnia ocena: ${averageRating.toFixed(2)}`,
+            popularity: ((categoryRatings.length / allRatings.length) * 100).toFixed(1)
+        };
+    });
+
+    return pricePreferences;
+};
 export default router;
