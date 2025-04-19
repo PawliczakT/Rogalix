@@ -3,6 +3,8 @@ import { useYear } from '../../context/YearContext';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { Container, Typography, Button, Box, Card, CardContent, CardActions } from '@mui/material';
+import LoadingSpinner from '../LoadingSpinner';
+import { TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
 
 const RogalListPage = () => {
     const { year: selectedYear } = useYear();
@@ -10,10 +12,14 @@ const RogalListPage = () => {
     const [averagePrice, setAveragePrice] = useState(0);
     const [averageWeight, setAverageWeight] = useState(0);
     const [isAdmin, setIsAdmin] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('');
+    const [sortBy, setSortBy] = useState('name');
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchRogals = async () => {
+            setLoading(true);
             try {
                 // Try fetching user details
                 let isAdmin = false;
@@ -30,7 +36,7 @@ const RogalListPage = () => {
                 const sortedRogals = res.data.sort((a, b) => a.name.localeCompare(b.name));
                 setRogals(sortedRogals);
 
-                const statsRes = await api.get('/rogals/statistics');
+                const statsRes = await api.get('/rogals/statistics', { params: { year: selectedYear } });
                 setAveragePrice(statsRes.data.averagePrice);
                 setAverageWeight(statsRes.data.averageWeight);
             } catch (err) {
@@ -72,13 +78,44 @@ const RogalListPage = () => {
         }
     };
 
+    // Filtering and sorting
+    const filteredRogals = rogals
+        .filter(rogal => rogal.name.toLowerCase().includes(filter.toLowerCase()))
+        .sort((a, b) => {
+            if (sortBy === 'name') return a.name.localeCompare(b.name);
+            if (sortBy === 'price') return a.price - b.price;
+            if (sortBy === 'rating') return (b.averageRating || 0) - (a.averageRating || 0);
+            return 0;
+        });
+
     return (
         <Container>
             <Typography variant="h4" component="h1" gutterBottom>
                 Wszystkie rogale
             </Typography>
+            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                <TextField
+                    label="Filtruj po nazwie"
+                    value={filter}
+                    onChange={e => setFilter(e.target.value)}
+                    size="small"
+                />
+                <FormControl size="small">
+                    <InputLabel id="sort-label">Sortuj</InputLabel>
+                    <Select
+                        labelId="sort-label"
+                        value={sortBy}
+                        label="Sortuj"
+                        onChange={e => setSortBy(e.target.value)}
+                    >
+                        <MenuItem value="name">Nazwa</MenuItem>
+                        <MenuItem value="price">Cena</MenuItem>
+                        <MenuItem value="rating">Ocena</MenuItem>
+                    </Select>
+                </FormControl>
+            </Box>
             <Box sx={{ mt: 4 }}>
-                {rogals.map((rogal) => (
+                {filteredRogals.map((rogal) => (
                     <Card key={rogal._id} sx={{ mb: 2 }}>
                         <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
                             <Box sx={{ flexGrow: 1 }}>
@@ -89,6 +126,11 @@ const RogalListPage = () => {
                                 <Typography variant="body1">
                                     Cena: {rogal.price} zł {getArrow(rogal.price, averagePrice)}
                                 </Typography>
+                                {rogal.bakery && rogal.bakery.address && (
+                                    <Typography variant="body1">
+                                        Adres piekarni: {rogal.bakery.address}
+                                    </Typography>
+                                )}
                                 <Typography variant="body1">
                                     Waga: {rogal.weight} g {getArrow(rogal.weight, averageWeight)}
                                 </Typography>

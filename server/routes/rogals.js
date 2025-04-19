@@ -393,12 +393,26 @@ router.get('/top10quality', async (req, res) => {
     }
 });
 
-// @route   GET api/rogals/statistics
 // @desc    Get rogal statistics
 // @access  Public
 router.get('/statistics', async (req, res) => {
     try {
-        const rogals = await Rogal.find();
+        const { year } = req.query;
+        let rogals = await Rogal.find();
+        if (year) {
+            rogals = rogals.filter(rogal => {
+                // Sprawdź, czy rogal ma ocenę z danego roku
+                const ratingsForYear = rogal.ratings.filter(rating => {
+                    if (!rating.date) return false;
+                    const ratingYear = new Date(rating.date).getFullYear();
+                    return ratingYear === parseInt(year, 10);
+                });
+                // Podmień ratings na filtrowane
+                rogal.ratings = ratingsForYear;
+                // Uwzględnij tylko rogale, które mają jakieś oceny z danego roku
+                return ratingsForYear.length > 0;
+            });
+        }
         const stats = rogals.reduce(
             (acc, rogal) => {
                 const totalRating = rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0);
@@ -410,11 +424,11 @@ router.get('/statistics', async (req, res) => {
                 acc.totalPrice += parseFloat(rogal.price) || 0; // Ensure price is parsed as a float
                 acc.totalWeight += parseFloat(rogal.weight) || 0; // Ensure weight is parsed as a float
 
-                if (avgRating > acc.highestRating) {
+                if (rogal.ratings.length > 0 && avgRating > acc.highestRating) {
                     acc.highestRating = avgRating;
                     acc.bestRogal = rogal.name;
                 }
-                if (avgRating < acc.lowestRating || acc.lowestRating === 0) {
+                if (rogal.ratings.length > 0 && (avgRating < acc.lowestRating || acc.lowestRating === 0)) {
                     acc.lowestRating = avgRating;
                     acc.worstRogal = rogal.name;
                 }
@@ -561,7 +575,16 @@ router.put('/rating/:id', auth, async (req, res) => {
 // @desc    Update rogal
 // @access  Private/Admin
 router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) => {
-    const { name, description, price, weight } = req.body;
+    let { name, description, price, weight, bakery } = req.body;
+
+    // Jeśli bakery jest stringiem (bo wysłane jako JSON), zparsuj
+    if (typeof bakery === 'string') {
+        try {
+            bakery = JSON.parse(bakery);
+        } catch (e) {
+            bakery = {};
+        }
+    }
 
     const rogalFields = {
         name,
@@ -569,6 +592,14 @@ router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) =
         price,
         weight,
     };
+    // Obsługa adresu piekarni
+    if (bakery && (bakery.address || bakery.lat || bakery.lng)) {
+        rogalFields.bakery = {
+            address: bakery.address || '',
+            lat: bakery.lat || '',
+            lng: bakery.lng || ''
+        };
+    }
 
     if (req.file) {
         console.log("Uploading file to S3:", req.file.originalname);

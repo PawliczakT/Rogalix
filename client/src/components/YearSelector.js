@@ -11,6 +11,7 @@ const YearSelector = () => {
     const fetchYears = async () => {
       try {
         const res = await api.get('/rogals/years');
+        console.log('Dostępne lata:', res.data);
         setAvailableYears(res.data);
         if (!year && res.data.length > 0) {
           setYear(res.data[0]);
@@ -29,7 +30,7 @@ const YearSelector = () => {
       <Select
         labelId="year-select-label"
         id="year-select"
-        value={year || ''}
+        value={availableYears.includes(year) ? year : ''}
         onChange={e => setYear(Number(e.target.value))}
         label="Rok"
       >

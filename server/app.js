@@ -10,6 +10,7 @@ import {mongoURI as db} from './config/config.js';
 import users from './routes/auth.js';
 import rogals from './routes/rogals.js';
 import gustometr from './routes/gustometr.js';
+import bakeries from './routes/bakeries.js';
 import passportConfig from './config/passport.js';
 
 dotenv.config();
@@ -40,6 +41,7 @@ app.use('/api/users', users);
 app.use('/api/auth', users);
 app.use('/api/rogals', rogals);
 app.use('/api/gustometr', gustometr);
+app.use('/api/bakeries', bakeries);
 
 // Serve static assets if in production
 if (process.env.NODE_ENV === 'production') {

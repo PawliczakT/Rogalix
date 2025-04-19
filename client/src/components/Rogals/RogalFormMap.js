@@ -1,38 +1,82 @@
-import React, { useEffect, useRef } from 'react';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { GoogleMap } from '@react-google-maps/api';
 
 const containerStyle = {
   width: '100%',
   height: '250px',
 };
 
-const GOOGLE_LIBRARIES = ['places'];
+const POZNAN_CENTER = { lat: 52.4064, lng: 16.9252 };
 
-const RogalFormMap = ({ lat, lng, onMapClick }) => {
-  const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-    libraries: GOOGLE_LIBRARIES,
-  });
-  const mapRef = useRef(null);
+const RogalFormMap = ({ isLoaded, lat, lng, onMapClick }) => {
+
+  const [mapInstance, setMapInstance] = useState(null);
+  const markerRef = useRef(null);
+
+  const onLoad = useCallback(map => {
+    setMapInstance(map);
+  }, []);
+
+  const onUnmount = useCallback(map => {
+    setMapInstance(null);
+    if (markerRef.current) {
+      markerRef.current.map = null;
+      markerRef.current = null;
+    }
+  }, []);
 
   useEffect(() => {
-    if (mapRef.current && lat && lng) {
-      mapRef.current.panTo({ lat, lng });
-      mapRef.current.setZoom(15);
+    if (!mapInstance || !isLoaded || !window.google?.maps?.marker) {
+      return;
     }
-  }, [lat, lng]);
+
+    if (markerRef.current) {
+      markerRef.current.map = null;
+      markerRef.current = null;
+    }
+
+    const currentLat = parseFloat(lat);
+    const currentLng = parseFloat(lng);
+
+    if (!isNaN(currentLat) && !isNaN(currentLng)) {
+      const position = { lat: currentLat, lng: currentLng };
+
+      try {
+        markerRef.current = new window.google.maps.marker.AdvancedMarkerElement({
+          position,
+          map: mapInstance,
+          title: 'Wybrana lokalizacja',
+        });
+      } catch (error) {
+        console.error("Error creating AdvancedMarkerElement in RogalFormMap:", error);
+      }
+    }
+  }, [mapInstance, isLoaded, lat, lng]);
 
   if (!isLoaded) return <div>Ładowanie mapy...</div>;
 
+  const center = !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng))
+    ? { lat: parseFloat(lat), lng: parseFloat(lng) }
+    : POZNAN_CENTER;
+  const zoom = !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng)) ? 15 : 11;
+
   return (
     <GoogleMap
-      onLoad={map => (mapRef.current = map)}
       mapContainerStyle={containerStyle}
-      center={lat && lng ? { lat, lng } : { lat: 52.4064, lng: 16.9252 }}
-      zoom={lat && lng ? 15 : 11}
-      onClick={(e) => onMapClick({ lat: e.latLng.lat(), lng: e.latLng.lng() })}
+      center={center}
+      zoom={zoom}
+      onLoad={onLoad}
+      onUnmount={onUnmount}
+      onClick={(e) => {
+        if (onMapClick) {
+          onMapClick({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+        }
+      }}
+      options={{
+        gestureHandling: 'cooperative',
+        mapId: process.env.REACT_APP_GOOGLE_MAP_ID
+      }}
     >
-      {lat && lng && <Marker position={{ lat, lng }} />}
     </GoogleMap>
   );
 };

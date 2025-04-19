@@ -1,18 +1,12 @@
 import React, { useState } from 'react';
 import { Container, Typography, TextField, Button, Box, Alert } from '@mui/material';
-import { useJsApiLoader } from '@react-google-maps/api';
+
 import api from '../../api';
 import BakeryAutocomplete from './BakeryAutocomplete';
 import RogalFormMap from './RogalFormMap';
 import { getGeocode, getLatLng } from 'use-places-autocomplete';
 
-const GOOGLE_LIBRARIES = ['places'];
-
-const AddRogal = () => {
-    const { isLoaded } = useJsApiLoader({
-        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
-        libraries: GOOGLE_LIBRARIES,
-    });
+const AddRogal = ({ isLoaded }) => {
 
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
@@ -111,6 +105,7 @@ const AddRogal = () => {
                 </Box>
                 <Box sx={{ mb: 2 }}>
                     <BakeryAutocomplete
+                        isLoaded={isLoaded}
                         onSelect={({ address, lat, lng }) => {
                             setBakeryAddress(address);
                             setBakeryLat(lat);
@@ -121,6 +116,7 @@ const AddRogal = () => {
 
                 <Box sx={{ mb: 2 }}>
                     <RogalFormMap
+                        isLoaded={isLoaded}
                         lat={bakeryLat}
                         lng={bakeryLng}
                         onMapClick={({ lat, lng }) => {

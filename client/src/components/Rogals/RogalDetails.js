@@ -4,7 +4,7 @@ import api from '../../api';
 import { Container, Typography, Box, Card, CardContent, TextField, Button, Alert } from '@mui/material';
 import RogalFormMap from './RogalFormMap';
 
-const RogalDetails = () => {
+const RogalDetails = ({ isLoaded }) => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [rogal, setRogal] = useState({});
@@ -75,7 +75,7 @@ const RogalDetails = () => {
                         )}
                         {rogal.bakery && rogal.bakery.lat && rogal.bakery.lng && (
                           <Box sx={{ my: 2 }}>
-                            <RogalFormMap lat={rogal.bakery.lat} lng={rogal.bakery.lng} />
+                            <RogalFormMap isLoaded={isLoaded} lat={rogal.bakery.lat} lng={rogal.bakery.lng} />
                           </Box>
                         )}
                         <Typography variant="body1">{rogal.description}</Typography>
@@ -104,6 +104,23 @@ const RogalDetails = () => {
                             Zobacz piekarnię
                           </Button>
                         )}
+
+                        {/* Komentarze */}
+                        <Box sx={{ mt: 4 }}>
+                          <Typography variant="h6" component="h3" gutterBottom>Komentarze użytkowników</Typography>
+                          {rogal.ratings && rogal.ratings.filter(r => r.comment && r.comment.trim() !== '').length > 0 ? (
+                            rogal.ratings.filter(r => r.comment && r.comment.trim() !== '').map((r, idx) => (
+                              <Box key={idx} sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 2 }}>
+                                <Typography variant="subtitle2" color="textSecondary">
+                                  {r.user && r.user.name ? r.user.name : "Anonimowy użytkownik"}
+                                </Typography>
+                                <Typography variant="body2">{r.comment}</Typography>
+                              </Box>
+                            ))
+                          ) : (
+                            <Typography variant="body2" color="textSecondary">Brak komentarzy do tego rogala.</Typography>
+                          )}
+                        </Box>
 
                     </CardContent>
                 </Card>

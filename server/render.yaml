@@ -1,0 +1,16 @@
+# Render.com configuration for Node.js backend
+services:
+  - type: web
+    name: rogal-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node app.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      # Dodaj tu swoje sekrety, np. do MongoDB, AWS itp.
+      # - key: MONGODB_URI
+      #   value: "mongodb+srv://..."

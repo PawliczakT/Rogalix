@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Typography, TextField, Button, Box, Alert } from '@mui/material';
 import api from '../../api';
+import BakeryAutocomplete from './BakeryAutocomplete';
+import RogalFormMap from './RogalFormMap';
 
-const EditRogal = () => {
+const EditRogal = ({ isLoaded }) => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
@@ -12,7 +14,13 @@ const EditRogal = () => {
         price: '',
         weight: '',
         image: null,
+        bakeryAddress: '',
+        bakeryLat: '',
+        bakeryLng: '',
     });
+    const [addressSelected, setAddressSelected] = useState(false);
+    // Synchronizuj BakeryAutocomplete i mapę
+    // bakeryLat/bakeryLng mogą być stringami lub liczbami, więc zawsze parsuj dla mapy
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
 
@@ -20,8 +28,17 @@ const EditRogal = () => {
         const fetchRogal = async () => {
             try {
                 const res = await api.get(`/rogals/${id}`);
-                const { name, description, price, weight } = res.data;
-                setFormData({ name, description, price: price.toString(), weight: weight.toString(), image: null });
+                const { name, description, price, weight, bakery } = res.data;
+                setFormData({
+                    name,
+                    description,
+                    price: price.toString(),
+                    weight: weight.toString(),
+                    image: null,
+                    bakeryAddress: bakery?.address || '',
+                    bakeryLat: bakery?.lat || '',
+                    bakeryLng: bakery?.lng || '',
+                });
             } catch (err) {
                 console.error(err.response.data);
             }
@@ -30,14 +47,37 @@ const EditRogal = () => {
         fetchRogal();
     }, [id]);
 
-    const { name, description, price, weight, image } = formData;
+    const { name, description, price, weight, image, bakeryAddress, bakeryLat, bakeryLng } = formData;
 
     const onChange = (e) => {
         if (e.target.name === 'image') {
             setFormData({ ...formData, image: e.target.files[0] });
         } else {
             setFormData({ ...formData, [e.target.name]: e.target.value });
+            if (["bakeryAddress", "bakeryLat", "bakeryLng"].includes(e.target.name)) {
+                setAddressSelected(false);
+            }
         }
+    };
+
+    const onAutocompleteSelect = ({ address, lat, lng }) => {
+        setFormData({
+            ...formData,
+            bakeryAddress: address || '',
+            bakeryLat: lat || '',
+            bakeryLng: lng || '',
+        });
+        setAddressSelected(!!address);
+    };
+
+    // Klik na mapie ustawia współrzędne, nie zmienia adresu
+    const onMapClick = ({ lat, lng }) => {
+        setFormData({
+            ...formData,
+            bakeryLat: lat,
+            bakeryLng: lng,
+        });
+        setAddressSelected(false); // pozwól edytować adres ręcznie, jeśli kliknięto mapę
     };
 
     const onSubmit = async (e) => {
@@ -51,6 +91,14 @@ const EditRogal = () => {
         rogalData.append('weight', weight);
         if (image) {
             rogalData.append('image', image);
+        }
+        // Dodaj dane piekarni
+        if (bakeryAddress || bakeryLat || bakeryLng) {
+            rogalData.append('bakery', JSON.stringify({
+                address: bakeryAddress,
+                lat: bakeryLat,
+                lng: bakeryLng
+            }));
         }
 
         try {
@@ -128,6 +176,15 @@ const EditRogal = () => {
                             {image.name}
                         </Typography>
                     )}
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                    <BakeryAutocomplete onSelect={onAutocompleteSelect} />
+                    <RogalFormMap
+                        isLoaded={isLoaded}
+                        lat={parseFloat(bakeryLat) || ''}
+                        lng={parseFloat(bakeryLng) || ''}
+                        onMapClick={onMapClick}
+                    />
                 </Box>
                 <Button type="submit" variant="contained" color="primary">
                     Zapisz zmiany
