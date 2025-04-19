@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { Container, Typography, TextField, Button, Box, Alert } from '@mui/material';
+import React, {useState} from 'react';
+import {Alert, Box, Button, Container, TextField, Typography} from '@mui/material';
 
 import api from '../../api';
 import BakeryAutocomplete from './BakeryAutocomplete';
 import RogalFormMap from './RogalFormMap';
-import { getGeocode, getLatLng } from 'use-places-autocomplete';
+import {getGeocode, getLatLng} from 'use-places-autocomplete';
 
-const AddRogal = ({ isLoaded }) => {
+const AddRogal = ({isLoaded}) => {
 
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
@@ -27,9 +27,9 @@ const AddRogal = ({ isLoaded }) => {
             bakeryAddress &&
             (bakeryLat === null || bakeryLng === null)
         ) {
-            getGeocode({ address: bakeryAddress })
+            getGeocode({address: bakeryAddress})
                 .then(results => getLatLng(results[0]))
-                .then(({ lat, lng }) => {
+                .then(({lat, lng}) => {
                     setBakeryLat(lat);
                     setBakeryLng(lng);
                 })
@@ -90,11 +90,12 @@ const AddRogal = ({ isLoaded }) => {
                 Dodaj rogala
             </Typography>
             {error && <Alert severity="error">{error}</Alert>}
-            {success && <Alert severity="success">Rogal został dodany pomyślnie! Poczekaj na zatwierdzenie przez administratora.</Alert>}
+            {success && <Alert severity="success">Rogal został dodany pomyślnie! Poczekaj na zatwierdzenie przez
+                administratora.</Alert>}
             <form onSubmit={handleSubmit}>
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{mb: 2}}>
                 </Box>
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{mb: 2}}>
                     <TextField
                         label="Nazwa piekarni"
                         value={name}
@@ -103,10 +104,10 @@ const AddRogal = ({ isLoaded }) => {
                         fullWidth
                     />
                 </Box>
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{mb: 2}}>
                     <BakeryAutocomplete
                         isLoaded={isLoaded}
-                        onSelect={({ address, lat, lng }) => {
+                        onSelect={({address, lat, lng}) => {
                             setBakeryAddress(address);
                             setBakeryLat(lat);
                             setBakeryLng(lng);
@@ -114,18 +115,18 @@ const AddRogal = ({ isLoaded }) => {
                     />
                 </Box>
 
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{mb: 2}}>
                     <RogalFormMap
                         isLoaded={isLoaded}
                         lat={bakeryLat}
                         lng={bakeryLng}
-                        onMapClick={({ lat, lng }) => {
+                        onMapClick={({lat, lng}) => {
                             setBakeryLat(lat);
                             setBakeryLng(lng);
                         }}
                     />
                 </Box>
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{mb: 2}}>
                     <TextField
                         label="Cena"
                         value={price}
@@ -134,7 +135,7 @@ const AddRogal = ({ isLoaded }) => {
                         fullWidth
                     />
                 </Box>
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{mb: 2}}>
                     <TextField
                         label="Waga"
                         type="number"
@@ -144,7 +145,7 @@ const AddRogal = ({ isLoaded }) => {
                         fullWidth
                     />
                 </Box>
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{mb: 2}}>
                     <Button
                         variant="contained"
                         component="label"
@@ -157,7 +158,7 @@ const AddRogal = ({ isLoaded }) => {
                         />
                     </Button>
                     {image && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
+                        <Typography variant="body2" sx={{mt: 1}}>
                             {image.name}
                         </Typography>
                     )}

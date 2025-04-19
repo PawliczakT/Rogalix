@@ -1,11 +1,11 @@
 import dotenv from 'dotenv';
 import request from 'supertest';
-import { expect } from 'chai';
+import {expect} from 'chai';
 import mongoose from 'mongoose';
 import User from '../server/models/User.js';
 import bcrypt from 'bcryptjs';
 
-dotenv.config({ path: '.env.test' });
+dotenv.config({path: '.env.test'});
 
 let app;
 

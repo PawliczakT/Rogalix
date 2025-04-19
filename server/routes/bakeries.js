@@ -15,15 +15,17 @@ router.get('/', async (req, res) => {
             rogals = await Rogal.find({
                 approved: true,
                 $expr: {
-                    $eq: [{ $year: "$date" }, year]
+                    $eq: [{$year: "$date"}, year]
                 }
             });
         } else {
-            rogals = await Rogal.find({ approved: true });
+            rogals = await Rogal.find({approved: true});
         }
         console.log('QUERY year:', year);
         console.log('ROGALS:', rogals);
-        rogals.forEach(rogal => { console.log('ROGAL:', rogal); });
+        rogals.forEach(rogal => {
+            console.log('ROGAL:', rogal);
+        });
         // Wyciągamy unikalne piekarnie z koordynatami
         const bakeriesMap = {};
         rogals.forEach(rogal => {

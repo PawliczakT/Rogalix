@@ -11,13 +11,12 @@ let app;
 let token1, token2, user1, user2;
 
 before(async function () {
-    this.timeout(20000); // Increase timeout to 20 seconds
+    this.timeout(20000);
 
     try {
         const importedApp = await import('../server/app.js'); // Use dynamic import
-        app = importedApp.default; // Access the default export
+        app = importedApp.default;
 
-        // Register and login first user
         await request(app)
             .post('/api/users/register')
             .send({
@@ -39,7 +38,6 @@ before(async function () {
 
         user1 = await User.findOne({email: 'user1@example.com'});
 
-        // Register and login second user
         await request(app)
             .post('/api/users/register')
             .send({
@@ -61,7 +59,6 @@ before(async function () {
 
         user2 = await User.findOne({email: 'user2@example.com'});
 
-        // Add some rogals
         const rogal1 = new Rogal({
             name: 'Rogal 1',
             description: 'Test Description',
@@ -94,7 +91,6 @@ before(async function () {
 });
 
 after(async () => {
-    // Cleanup database
     await User.deleteMany({});
     await Rogal.deleteMany({});
     await mongoose.connection.close();

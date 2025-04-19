@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
 
         const userIds = Object.keys(userRatings);
 
-        const users = await User.find({ _id: { $in: userIds } }, 'name');
+        const users = await User.find({_id: {$in: userIds}}, 'name');
         const userMap = {};
         users.forEach(user => {
             userMap[user._id] = user.name;
@@ -63,7 +63,7 @@ router.get('/', async (req, res) => {
         res.json(tasteMatrix);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({error: 'Server error'});
     }
 });
 

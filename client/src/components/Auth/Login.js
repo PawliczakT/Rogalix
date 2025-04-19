@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import api from '../../api';
-import { Container, TextField, Button, Typography } from '@mui/material';
+import {Button, Container, TextField, Typography} from '@mui/material';
 import GoogleLoginButton from './GoogleLoginButton';
-import { useNotification } from '../../context/NotificationContext';
+import {useNotification} from '../../context/NotificationContext';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
-    const { showNotification } = useNotification();
+    const {showNotification} = useNotification();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await api.post('/users/login', { email, password });
+            const res = await api.post('/users/login', {email, password});
             localStorage.setItem('token', res.data.token);
             showNotification('Zalogowano pomyślnie!', 'success');
             window.location.href = '/rogals';
@@ -52,7 +52,7 @@ const Login = () => {
                     Zaloguj się
                 </Button>
             </form>
-            <GoogleLoginButton />
+            <GoogleLoginButton/>
         </Container>
     );
 };

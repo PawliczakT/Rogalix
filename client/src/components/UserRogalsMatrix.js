@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { useYear } from '../context/YearContext';
-import { Link } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {useYear} from '../context/YearContext';
+import {Link} from 'react-router-dom';
 import api from '../api';
-import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper } from '@mui/material';
+import {Container, Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography} from '@mui/material';
 
 const UserRogalsMatrix = () => {
-    const { year: selectedYear } = useYear();
+    const {year: selectedYear} = useYear();
     const [matrix, setMatrix] = useState([]);
 
     useEffect(() => {
         const fetchUserRatings = async () => {
             try {
-                const res = await api.get('/rogals/user-ratings', { params: { year: selectedYear } });
+                const res = await api.get('/rogals/user-ratings', {params: {year: selectedYear}});
                 console.log("Fetched user ratings:", res.data); // Log fetched data
                 setMatrix(res.data);
             } catch (err) {
@@ -32,8 +32,8 @@ const UserRogalsMatrix = () => {
                 User-Ratings-Matrix
             </Typography>
             <p></p>
-            <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-                <Table sx={{ minWidth: 650 }} aria-label="user rogal matrix">
+            <Paper sx={{width: '100%', overflow: 'hidden'}}>
+                <Table sx={{minWidth: 650}} aria-label="user rogal matrix">
                     <TableHead>
                         <TableRow>
                             <TableCell>Rogal/Użytkownik</TableCell>

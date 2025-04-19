@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, {useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import api from '../../api';
-import { Container, TextField, Button, Typography } from '@mui/material';
+import {Button, Container, TextField, Typography} from '@mui/material';
 
 const Register = () => {
     const [name, setName] = useState('');
@@ -13,7 +13,7 @@ const Register = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/users/register', { name, email, confirmEmail });
+            await api.post('/users/register', {name, email, confirmEmail});
             navigate('/login');  // Redirect to login page after successful registration
         } catch (err) {
             setError(err.response.data.msg);

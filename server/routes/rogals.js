@@ -61,7 +61,7 @@ router.post(
 
             // Sprawdź czy już istnieje rogal z tą piekarnią
             if (bakery && bakery.name) {
-                const existingBakeryRogal = await Rogal.findOne({ 'bakery.name': bakery.name });
+                const existingBakeryRogal = await Rogal.findOne({'bakery.name': bakery.name});
                 if (existingBakeryRogal) {
                     return res.status(400).json({msg: 'Każda piekarnia może mieć tylko jednego rogala w systemie'});
                 }
@@ -110,22 +110,22 @@ router.post(
             const formattedPrice = parseFloat(price.replace(',', '.')).toFixed(2);
 
             const bakeryObj = bakery && bakery.address ? {
-    name: bakery.name,
-    address: bakery.address,
-    lat: bakery.lat,
-    lng: bakery.lng
-} : undefined;
+                name: bakery.name,
+                address: bakery.address,
+                lat: bakery.lat,
+                lng: bakery.lng
+            } : undefined;
 
-const newRogal = new Rogal({
-    name,
-    description,
-    price: formattedPrice,
-    weight,
-    user: req.user.id,
-    image: imageUrl,
-    approved: false,
-    ...(bakeryObj ? { bakery: bakeryObj } : {})
-});
+            const newRogal = new Rogal({
+                name,
+                description,
+                price: formattedPrice,
+                weight,
+                user: req.user.id,
+                image: imageUrl,
+                approved: false,
+                ...(bakeryObj ? {bakery: bakeryObj} : {})
+            });
 
             const rogal = await newRogal.save();
             console.log("New Rogal added:", rogal);
@@ -165,7 +165,7 @@ router.get('/years', async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
     try {
-        const { year } = req.query;
+        const {year} = req.query;
         let rogals = await Rogal.find().populate('user', ['name']);
         if (year) {
             rogals = rogals.filter(rogal => {
@@ -178,7 +178,7 @@ router.get('/', async (req, res) => {
         const rogalsWithAdditionalInfo = rogals.map(rogal => {
             const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
             const pricePerKg = (rogal.price / rogal.weight) * 1000;
-            return { ...rogal.toObject(), averageRating, pricePerKg };
+            return {...rogal.toObject(), averageRating, pricePerKg};
         });
         res.json(rogalsWithAdditionalInfo);
     } catch (err) {
@@ -192,7 +192,7 @@ router.get('/', async (req, res) => {
 // @access  Private/Admin
 router.get('/admin', [auth, adminAuth], async (req, res) => {
     try {
-        const { year } = req.query;
+        const {year} = req.query;
         let rogals = await Rogal.find().populate('user', ['name']);
         if (year) {
             rogals = rogals.filter(rogal => {
@@ -251,7 +251,7 @@ router.put('/approve/:id', [auth, adminAuth], async (req, res) => {
 // @access  Private
 router.get('/my-ratings', auth, async (req, res) => {
     try {
-        const { year } = req.query;
+        const {year} = req.query;
         let rogals = await Rogal.find().populate('ratings.user', 'name');
         if (year) {
             rogals = rogals.filter(rogal => {
@@ -281,7 +281,7 @@ router.get('/my-ratings', auth, async (req, res) => {
 
 router.get('/user-ratings', async (req, res) => {
     try {
-        const { year } = req.query;
+        const {year} = req.query;
         let rogals = await Rogal.find().populate('ratings.user', 'name');
         if (year) {
             rogals = rogals.filter(rogal => {
@@ -319,7 +319,7 @@ router.get('/user-ratings', async (req, res) => {
 // @access  Public
 router.get('/top10', async (req, res) => {
     try {
-        const { year } = req.query;
+        const {year} = req.query;
         let rogals = await Rogal.find({approved: true}).populate('user', ['name']);
         if (year) {
             rogals = rogals.filter(rogal => {
@@ -359,7 +359,7 @@ router.get('/top10', async (req, res) => {
 // @access  Public
 router.get('/top10quality', async (req, res) => {
     try {
-        const { year } = req.query;
+        const {year} = req.query;
         let rogals = await Rogal.find({approved: true}).populate('user', ['name']);
         if (year) {
             rogals = rogals.filter(rogal => {
@@ -397,7 +397,7 @@ router.get('/top10quality', async (req, res) => {
 // @access  Public
 router.get('/statistics', async (req, res) => {
     try {
-        const { year } = req.query;
+        const {year} = req.query;
         let rogals = await Rogal.find();
         if (year) {
             rogals = rogals.filter(rogal => {
@@ -464,7 +464,7 @@ router.get('/statistics', async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
     try {
-        const rogals = await Rogal.find({ approved: true }).populate('user', ['name']);
+        const rogals = await Rogal.find({approved: true}).populate('user', ['name']);
         const rogalsWithAdditionalInfo = rogals.map(rogal => {
             const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
             const pricePerKg = (rogal.price / rogal.weight) * 1000;
@@ -542,13 +542,13 @@ router.delete('/:id', [auth, adminAuth], async (req, res) => {
 // @desc    Update rating
 // @access  Private
 router.put('/rating/:id', auth, async (req, res) => {
-    const { rating, comment } = req.body;
+    const {rating, comment} = req.body;
 
     try {
         let rogal = await Rogal.findById(req.params.id);
 
         if (!rogal) {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
 
         const userRating = rogal.ratings.find(r => r.user.toString() === req.user.id);
@@ -559,7 +559,7 @@ router.put('/rating/:id', auth, async (req, res) => {
             userRating.comment = comment;
         } else {
             // Add new rating
-            rogal.ratings.unshift({ user: req.user.id, rating, comment });
+            rogal.ratings.unshift({user: req.user.id, rating, comment});
         }
 
         await rogal.save();
@@ -575,7 +575,7 @@ router.put('/rating/:id', auth, async (req, res) => {
 // @desc    Update rogal
 // @access  Private/Admin
 router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) => {
-    let { name, description, price, weight, bakery } = req.body;
+    let {name, description, price, weight, bakery} = req.body;
 
     // Jeśli bakery jest stringiem (bo wysłane jako JSON), zparsuj
     if (typeof bakery === 'string') {
@@ -619,11 +619,11 @@ router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) =
 
             const labels = detectLabelsResult.Labels.map(label => label.Name.toLowerCase());
             if (!labels.includes('bread') && !labels.includes('croissant') && !labels.includes('pastry')) {
-                return res.status(400).json({ msg: 'Zdjęcie nie przedstawia rogala' });
+                return res.status(400).json({msg: 'Zdjęcie nie przedstawia rogala'});
             }
         } catch (error) {
             console.error('AI verification error:', error);
-            return res.status(500).json({ msg: 'AI verification failed', error: error.message });
+            return res.status(500).json({msg: 'AI verification failed', error: error.message});
         }
 
         const uploadParams = {
@@ -639,7 +639,7 @@ router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) =
             rogalFields.image = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
         } catch (uploadError) {
             console.error("S3 upload error:", uploadError);
-            return res.status(500).json({ msg: 'Error uploading image to S3', error: uploadError.message });
+            return res.status(500).json({msg: 'Error uploading image to S3', error: uploadError.message});
         }
     }
 
@@ -647,27 +647,27 @@ router.put('/:id', [auth, adminAuth], upload.single('image'), async (req, res) =
         let rogal = await Rogal.findById(req.params.id);
 
         if (!rogal) {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
 
         if (name !== rogal.name) {
-            const existingRogal = await Rogal.findOne({ name });
+            const existingRogal = await Rogal.findOne({name});
             if (existingRogal) {
-                return res.status(400).json({ msg: 'A rogal with this name already exists' });
+                return res.status(400).json({msg: 'A rogal with this name already exists'});
             }
         }
 
         rogal = await Rogal.findByIdAndUpdate(
             req.params.id,
-            { $set: rogalFields },
-            { new: true }
+            {$set: rogalFields},
+            {new: true}
         );
 
         res.json(rogal);
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {
-            return res.status(404).json({ msg: 'Rogal not found' });
+            return res.status(404).json({msg: 'Rogal not found'});
         }
         res.status(500).send('Server error');
     }

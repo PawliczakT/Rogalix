@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, TextField, Button, Box, Alert } from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {useNavigate, useParams} from 'react-router-dom';
+import {Alert, Box, Button, Container, TextField, Typography} from '@mui/material';
 import api from '../../api';
 import BakeryAutocomplete from './BakeryAutocomplete';
 import RogalFormMap from './RogalFormMap';
 
-const EditRogal = ({ isLoaded }) => {
-    const { id } = useParams();
+const EditRogal = ({isLoaded}) => {
+    const {id} = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         name: '',
@@ -19,8 +19,6 @@ const EditRogal = ({ isLoaded }) => {
         bakeryLng: '',
     });
     const [addressSelected, setAddressSelected] = useState(false);
-    // Synchronizuj BakeryAutocomplete i mapę
-    // bakeryLat/bakeryLng mogą być stringami lub liczbami, więc zawsze parsuj dla mapy
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
 
@@ -28,7 +26,7 @@ const EditRogal = ({ isLoaded }) => {
         const fetchRogal = async () => {
             try {
                 const res = await api.get(`/rogals/${id}`);
-                const { name, description, price, weight, bakery } = res.data;
+                const {name, description, price, weight, bakery} = res.data;
                 setFormData({
                     name,
                     description,
@@ -47,20 +45,20 @@ const EditRogal = ({ isLoaded }) => {
         fetchRogal();
     }, [id]);
 
-    const { name, description, price, weight, image, bakeryAddress, bakeryLat, bakeryLng } = formData;
+    const {name, description, price, weight, image, bakeryAddress, bakeryLat, bakeryLng} = formData;
 
     const onChange = (e) => {
         if (e.target.name === 'image') {
-            setFormData({ ...formData, image: e.target.files[0] });
+            setFormData({...formData, image: e.target.files[0]});
         } else {
-            setFormData({ ...formData, [e.target.name]: e.target.value });
+            setFormData({...formData, [e.target.name]: e.target.value});
             if (["bakeryAddress", "bakeryLat", "bakeryLng"].includes(e.target.name)) {
                 setAddressSelected(false);
             }
         }
     };
 
-    const onAutocompleteSelect = ({ address, lat, lng }) => {
+    const onAutocompleteSelect = ({address, lat, lng}) => {
         setFormData({
             ...formData,
             bakeryAddress: address || '',
@@ -71,13 +69,13 @@ const EditRogal = ({ isLoaded }) => {
     };
 
     // Klik na mapie ustawia współrzędne, nie zmienia adresu
-    const onMapClick = ({ lat, lng }) => {
+    const onMapClick = ({lat, lng}) => {
         setFormData({
             ...formData,
             bakeryLat: lat,
             bakeryLng: lng,
         });
-        setAddressSelected(false); // pozwól edytować adres ręcznie, jeśli kliknięto mapę
+        setAddressSelected(false);
     };
 
     const onSubmit = async (e) => {
@@ -92,7 +90,6 @@ const EditRogal = ({ isLoaded }) => {
         if (image) {
             rogalData.append('image', image);
         }
-        // Dodaj dane piekarni
         if (bakeryAddress || bakeryLat || bakeryLng) {
             rogalData.append('bakery', JSON.stringify({
                 address: bakeryAddress,
@@ -127,7 +124,7 @@ const EditRogal = ({ isLoaded }) => {
             {error && <Alert severity="error">{error}</Alert>}
             {success && <Alert severity="success">Rogal został zaktualizowany pomyślnie!</Alert>}
             <form onSubmit={onSubmit}>
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{mb: 2}}>
                     <TextField
                         label="Nazwa"
                         name="name"
@@ -137,7 +134,7 @@ const EditRogal = ({ isLoaded }) => {
                         fullWidth
                     />
                 </Box>
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{mb: 2}}>
                     <TextField
                         label="Cena"
                         name="price"
@@ -147,7 +144,7 @@ const EditRogal = ({ isLoaded }) => {
                         fullWidth
                     />
                 </Box>
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{mb: 2}}>
                     <TextField
                         label="Waga"
                         name="weight"
@@ -158,7 +155,7 @@ const EditRogal = ({ isLoaded }) => {
                         fullWidth
                     />
                 </Box>
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{mb: 2}}>
                     <Button
                         variant="contained"
                         component="label"
@@ -172,13 +169,13 @@ const EditRogal = ({ isLoaded }) => {
                         />
                     </Button>
                     {image && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
+                        <Typography variant="body2" sx={{mt: 1}}>
                             {image.name}
                         </Typography>
                     )}
                 </Box>
-                <Box sx={{ mb: 2 }}>
-                    <BakeryAutocomplete onSelect={onAutocompleteSelect} />
+                <Box sx={{mb: 2}}>
+                    <BakeryAutocomplete onSelect={onAutocompleteSelect}/>
                     <RogalFormMap
                         isLoaded={isLoaded}
                         lat={parseFloat(bakeryLat) || ''}

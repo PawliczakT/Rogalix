@@ -1,13 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { useYear } from '../../context/YearContext';
-import { Link, useNavigate } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {useYear} from '../../context/YearContext';
+import {Link, useNavigate} from 'react-router-dom';
 import api from '../../api';
-import { Container, Typography, Button, Box, Card, CardContent, CardActions } from '@mui/material';
-import LoadingSpinner from '../LoadingSpinner';
-import { TextField, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import {
+    Box,
+    Button,
+    Card,
+    CardActions,
+    CardContent,
+    Container,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    Typography
+} from '@mui/material';
 
 const RogalListPage = () => {
-    const { year: selectedYear } = useYear();
+    const {year: selectedYear} = useYear();
     const [rogals, setRogals] = useState([]);
     const [averagePrice, setAveragePrice] = useState(0);
     const [averageWeight, setAverageWeight] = useState(0);
@@ -32,11 +43,11 @@ const RogalListPage = () => {
                 }
                 setIsAdmin(isAdmin);
 
-                const res = isAdmin ? await api.get('/rogals/admin', { params: { year: selectedYear } }) : await api.get('/rogals', { params: { year: selectedYear } });
+                const res = isAdmin ? await api.get('/rogals/admin', {params: {year: selectedYear}}) : await api.get('/rogals', {params: {year: selectedYear}});
                 const sortedRogals = res.data.sort((a, b) => a.name.localeCompare(b.name));
                 setRogals(sortedRogals);
 
-                const statsRes = await api.get('/rogals/statistics', { params: { year: selectedYear } });
+                const statsRes = await api.get('/rogals/statistics', {params: {year: selectedYear}});
                 setAveragePrice(statsRes.data.averagePrice);
                 setAverageWeight(statsRes.data.averageWeight);
             } catch (err) {
@@ -60,7 +71,7 @@ const RogalListPage = () => {
         try {
             await api.put(`/rogals/approve/${id}`);
             const updatedRogals = rogals.map((rogal) =>
-                rogal._id === id ? { ...rogal, approved: true } : rogal
+                rogal._id === id ? {...rogal, approved: true} : rogal
             );
             setRogals(updatedRogals);
         } catch (err) {
@@ -93,7 +104,7 @@ const RogalListPage = () => {
             <Typography variant="h4" component="h1" gutterBottom>
                 Wszystkie rogale
             </Typography>
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <Box sx={{display: 'flex', gap: 2, mb: 2}}>
                 <TextField
                     label="Filtruj po nazwie"
                     value={filter}
@@ -114,11 +125,11 @@ const RogalListPage = () => {
                     </Select>
                 </FormControl>
             </Box>
-            <Box sx={{ mt: 4 }}>
+            <Box sx={{mt: 4}}>
                 {filteredRogals.map((rogal) => (
-                    <Card key={rogal._id} sx={{ mb: 2 }}>
-                        <CardContent sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Box sx={{ flexGrow: 1 }}>
+                    <Card key={rogal._id} sx={{mb: 2}}>
+                        <CardContent sx={{display: 'flex', alignItems: 'center'}}>
+                            <Box sx={{flexGrow: 1}}>
                                 <Typography variant="h5" component="h2">
                                     <Link to={`/rogals/${rogal._id}`}>{rogal.name}</Link>
                                 </Typography>
@@ -134,17 +145,20 @@ const RogalListPage = () => {
                                 <Typography variant="body1">
                                     Waga: {rogal.weight} g {getArrow(rogal.weight, averageWeight)}
                                 </Typography>
-                                <Typography variant="body1">Średnia ocena: {rogal.averageRating !== undefined ? rogal.averageRating.toFixed(1) : 'No ratings yet'}</Typography>
-                                <Typography variant="body1">Stosunek jakości do ceny: {rogal.qualityToPriceRatio !== undefined ? rogal.qualityToPriceRatio.toFixed(2) : 'N/A'}</Typography>
-                                <Typography variant="body1">Cena za 1kg: {rogal.pricePerKg !== undefined ? rogal.pricePerKg.toFixed(2) : 'N/A'} zł</Typography>
+                                <Typography variant="body1">Średnia
+                                    ocena: {rogal.averageRating !== undefined ? rogal.averageRating.toFixed(1) : 'No ratings yet'}</Typography>
+                                <Typography variant="body1">Stosunek jakości do
+                                    ceny: {rogal.qualityToPriceRatio !== undefined ? rogal.qualityToPriceRatio.toFixed(2) : 'N/A'}</Typography>
+                                <Typography variant="body1">Cena za
+                                    1kg: {rogal.pricePerKg !== undefined ? rogal.pricePerKg.toFixed(2) : 'N/A'} zł</Typography>
                                 <Typography variant="body1">Liczba głosów: {rogal.ratings.length}</Typography>
                             </Box>
                             {rogal.image && (
-                                <Box sx={{ ml: 2 }}>
+                                <Box sx={{ml: 2}}>
                                     <img
                                         src={rogal.image}
                                         alt={rogal.name}
-                                        style={{ height: '150px', width: '300px', objectFit: 'cover' }}
+                                        style={{height: '150px', width: '300px', objectFit: 'cover'}}
                                     />
                                 </Box>
                             )}
@@ -152,9 +166,12 @@ const RogalListPage = () => {
                         <CardActions>
                             {isAdmin && (
                                 <>
-                                    <Button size="small" color="primary" onClick={() => approveRogal(rogal._id)} disabled={rogal.approved}>Zatwierdź</Button>
-                                    <Button size="small" color="secondary" onClick={() => deleteRogal(rogal._id)}>Usuń</Button>
-                                    <Button size="small" color="primary" onClick={() => navigate(`/rogals/edit/${rogal._id}`)}>Edytuj</Button>
+                                    <Button size="small" color="primary" onClick={() => approveRogal(rogal._id)}
+                                            disabled={rogal.approved}>Zatwierdź</Button>
+                                    <Button size="small" color="secondary"
+                                            onClick={() => deleteRogal(rogal._id)}>Usuń</Button>
+                                    <Button size="small" color="primary"
+                                            onClick={() => navigate(`/rogals/edit/${rogal._id}`)}>Edytuj</Button>
                                 </>
                             )}
                         </CardActions>

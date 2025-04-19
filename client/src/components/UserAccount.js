@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import api from '../api';
-import { Container, TextField, Button, Typography } from '@mui/material';
+import {Button, Container, TextField, Typography} from '@mui/material';
 
 const UserAccount = () => {
     const [currentPassword, setCurrentPassword] = useState('');
@@ -12,7 +12,7 @@ const UserAccount = () => {
         e.preventDefault();
         try {
             const token = localStorage.getItem('token');
-            await api.put('/users/password', { currentPassword, newPassword }, {
+            await api.put('/users/password', {currentPassword, newPassword}, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
