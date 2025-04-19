@@ -1,13 +1,6 @@
 import React, { useRef, useCallback } from 'react';
 import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
-import {
-  Combobox,
-  ComboboxInput,
-  ComboboxPopover,
-  ComboboxList,
-  ComboboxOption,
-} from '@reach/combobox';
-import '@reach/combobox/styles.css';
+import Downshift from 'downshift';
 import TextField from '@mui/material/TextField';
 
 const GOOGLE_LIBRARIES = ['places'];
@@ -43,27 +36,50 @@ const BakeryAutocomplete = ({ onSelect }) => {
   };
 
   return (
-    <Combobox onSelect={handleSelect} aria-label="Wyszukaj piekarnię">
-      <ComboboxInput
-        as={TextField}
-        label="Adres piekarni"
-        value={value}
-        onChange={handleInput}
-        // disabled={!ready}
-        placeholder="Wpisz adres piekarni..."
-        fullWidth
-        required
-      />
-      <ComboboxPopover>
-        {status === 'OK' && (
-          <ComboboxList>
-            {data.map(({ place_id, description }) => (
-              <ComboboxOption key={place_id} value={description} />
-            ))}
-          </ComboboxList>
-        )}
-      </ComboboxPopover>
-    </Combobox>
+    <Downshift
+      inputValue={value}
+      onInputValueChange={setValue}
+      onSelect={handleSelect}
+      itemToString={item => (item ? item.description || item : '')}
+    >
+      {({ getInputProps, getItemProps, getMenuProps, isOpen, highlightedIndex, selectedItem }) => (
+        <div style={{ position: 'relative' }}>
+          <TextField
+            label="Adres piekarni"
+            value={value}
+            onChange={handleInput}
+            placeholder="Wpisz adres piekarni..."
+            fullWidth
+            required
+            {...getInputProps()}
+          />
+          <div {...getMenuProps()} style={{ position: 'absolute', zIndex: 10, width: '100%' }}>
+            {isOpen && status === 'OK' && (
+              <div style={{ background: 'white', border: '1px solid #ccc', maxHeight: 220, overflowY: 'auto' }}>
+                {data.length === 0 ? (
+                  <div style={{ padding: 8 }}>Brak wyników</div>
+                ) : (
+                  data.map((item, index) => (
+                    <div
+                      key={item.place_id}
+                      {...getItemProps({ item: item.description, index })}
+                      style={{
+                        backgroundColor: highlightedIndex === index ? '#f0f0f0' : 'white',
+                        fontWeight: selectedItem === item.description ? 700 : 400,
+                        padding: 8,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {item.description}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </Downshift>
   );
 };
 
