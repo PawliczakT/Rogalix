@@ -4,17 +4,22 @@ import User from '../models/User.js';
 
 const auth = async (req, res, next) => {
     const authHeader = req.header('Authorization');
+    console.log('[AUTH] Authorization header:', authHeader);
     if (!authHeader) {
+        console.log('[AUTH] Brak nagłówka Authorization!');
         return res.status(401).send({ error: 'Authorization header is missing' });
     }
 
     const token = authHeader.replace('Bearer ', '');
+    console.log('[AUTH] Token:', token);
 
     try {
         const decoded = jwt.verify(token, secretOrKey);
+        console.log('[AUTH] JWT decoded:', decoded);
         const user = await User.findOne({ _id: decoded.id });
 
         if (!user) {
+            console.log('[AUTH] Nie znaleziono użytkownika dla tokena!');
             throw new Error();
         }
 
@@ -22,6 +27,7 @@ const auth = async (req, res, next) => {
         req.user = user;
         next();
     } catch (err) {
+        console.log('[AUTH] Błąd JWT:', err.message);
         res.status(401).send({ error: 'Please authenticate.' });
     }
 };

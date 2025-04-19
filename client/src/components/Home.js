@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useYear } from '../context/YearContext';
 import api from '../api';
 import { Container, Typography, Box, Grid, Paper, Card, CardContent } from '@mui/material';
 import {
@@ -6,6 +7,7 @@ import {
 } from 'recharts';
 
 const Home = () => {
+    const { year: selectedYear } = useYear();
     const [stats, setStats] = useState({
         totalRogals: 0,
         totalRatings: 0,
@@ -75,9 +77,101 @@ const Home = () => {
         fetchPriceRatingData();
     }, []);
 
+
+    // Fetch data for selected year
+    useEffect(() => {
+        const fetchDataForYear = async () => {
+            try {
+                const res = await api.get('/rogals', { params: { year: selectedYear } });
+                const data = res.data.map(rogal => ({
+                    name: rogal.name,
+                    price: parseFloat(rogal.price),
+                    weight: parseFloat(rogal.weight) / 10, // Convert weight to decagrams
+                    averageRating: rogal.ratings.length > 0
+                        ? rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length
+                        : 0,
+                    ratings: rogal.ratings
+                }));
+                setPriceRatingData(data);
+                const priceWeightData = data.map(rogal => ({
+                    name: rogal.name,
+                    price: parseFloat(rogal.price),
+                    weight: parseFloat(rogal.weight)
+                }));
+                setPriceWeightData(priceWeightData);
+
+                // Calculate stats
+                let totalRogals = data.length;
+                let totalRatings = 0;
+                let totalRatingSum = 0;
+                let highestRating = 0;
+                let lowestRating = 6;
+                let bestRogal = null;
+                let worstRogal = null;
+                let bestRogalAvg = 0;
+                let worstRogalAvg = 6;
+                let totalPrice = 0;
+                let totalWeight = 0;
+
+                data.forEach(rogal => {
+                    const ratings = rogal.ratings;
+                    const numRatings = ratings.length;
+                    if (numRatings > 0) {
+                        const avg = ratings.reduce((sum, r) => sum + r.rating, 0) / numRatings;
+                        totalRatings += numRatings;
+                        totalRatingSum += ratings.reduce((sum, r) => sum + r.rating, 0);
+                        totalPrice += rogal.price;
+                        totalWeight += rogal.weight;
+                        if (avg > bestRogalAvg) {
+                            bestRogalAvg = avg;
+                            bestRogal = rogal.name;
+                        }
+                        if (avg < worstRogalAvg) {
+                            worstRogalAvg = avg;
+                            worstRogal = rogal.name;
+                        }
+                        ratings.forEach(r => {
+                            if (r.rating > highestRating) highestRating = r.rating;
+                            if (r.rating < lowestRating) lowestRating = r.rating;
+                        });
+                    }
+                });
+
+                setStats({
+                    totalRogals,
+                    totalRatings,
+                    averageRating: totalRatings > 0 ? totalRatingSum / totalRatings : 0,
+                    highestRating: totalRatings > 0 ? highestRating : 0,
+                    bestRogal,
+                    lowestRating: totalRatings > 0 ? lowestRating : 0,
+                    worstRogal,
+                    averagePrice: totalRogals > 0 ? totalPrice / totalRogals : 0,
+                    averageWeight: totalRogals > 0 ? totalWeight / totalRogals : 0,
+                });
+            } catch (err) {
+                setPriceRatingData([]);
+                setPriceWeightData([]);
+                setStats({
+                    totalRogals: 0,
+                    totalRatings: 0,
+                    averageRating: 0,
+                    highestRating: 0,
+                    bestRogal: null,
+                    lowestRating: 0,
+                    worstRogal: null,
+                    averagePrice: 0,
+                    averageWeight: 0,
+                });
+            }
+        };
+        if (selectedYear) {
+            fetchDataForYear();
+        }
+    }, [selectedYear]);
+
+
     return (
         <Container>
-            <p></p>
             <Typography variant="h4" component="h1" gutterBottom>
                 {isLoggedIn ? (
                     <>Witaj {userName}, dodaj lub oceń se rogala:)</>

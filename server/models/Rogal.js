@@ -4,6 +4,7 @@ const { Schema } = mongoose;
 const RatingSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: 'users', required: true },
     rating: { type: Number, required: true, min: 1, max: 6 },
+    comment: { type: String },
     date: { type: Date, default: Date.now }
 });
 
@@ -16,8 +17,14 @@ const RogalSchema = new Schema({
     ratings: [RatingSchema],
     image: { type: String },
     date: { type: Date, default: Date.now },
-    approved: { type: Boolean, default: false }
-});
+    approved: { type: Boolean, default: false },
+    bakery: {
+        name: { type: String },
+        address: { type: String, required: false },
+        lat: { type: Number },
+        lng: { type: Number }
+    }
+}, { timestamps: true });
 
 RogalSchema.virtual('averageRating').get(function() {
     if (this.ratings.length === 0) return 0;

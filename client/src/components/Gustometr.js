@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useYear } from '../context/YearContext';
 import api from '../api';
 import { Container, Typography, Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 
 const Gustometr = () => {
+    const { year: selectedYear } = useYear();
     const [matrix, setMatrix] = useState({});
     const [users, setUsers] = useState([]);
     const [minValue, setMinValue] = useState(null);
@@ -11,7 +13,7 @@ const Gustometr = () => {
     useEffect(() => {
         const fetchMatrix = async () => {
             try {
-                const res = await api.get('/gustometr');
+                const res = await api.get('/gustometr', { params: { year: selectedYear } });
                 const data = res.data;
                 setMatrix(data);
                 setUsers(Object.keys(data));
@@ -37,7 +39,7 @@ const Gustometr = () => {
         };
 
         fetchMatrix().then(r => console.log('Fetched gustometr matrix'), e => console.error('Failed to fetch gustometr matrix:', e));
-    }, []);
+    }, [selectedYear]);
 
     return (
         <Container>

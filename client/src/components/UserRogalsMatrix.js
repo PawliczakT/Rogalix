@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
+import { useYear } from '../context/YearContext';
 import { Link } from 'react-router-dom';
 import api from '../api';
 import { Container, Typography, Table, TableBody, TableCell, TableHead, TableRow, Paper } from '@mui/material';
 
 const UserRogalsMatrix = () => {
+    const { year: selectedYear } = useYear();
     const [matrix, setMatrix] = useState([]);
 
     useEffect(() => {
         const fetchUserRatings = async () => {
             try {
-                const res = await api.get('/rogals/user-ratings');
+                const res = await api.get('/rogals/user-ratings', { params: { year: selectedYear } });
                 console.log("Fetched user ratings:", res.data); // Log fetched data
                 setMatrix(res.data);
             } catch (err) {
@@ -18,7 +20,7 @@ const UserRogalsMatrix = () => {
         };
 
         fetchUserRatings();
-    }, []);
+    }, [selectedYear]);
 
     // Extract unique users
     const users = Array.from(new Set(matrix.flatMap(rogal => rogal.ratings.map(rating => rating.user))));

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { Container, TextField, Button, Typography } from '@mui/material';
+import GoogleLoginButton from './GoogleLoginButton';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -48,6 +49,7 @@ const Login = () => {
                     Zaloguj się
                 </Button>
             </form>
+            <GoogleLoginButton />
         </Container>
     );
 };

@@ -1,15 +1,52 @@
 import React, { useState } from 'react';
 import { Container, Typography, TextField, Button, Box, Alert } from '@mui/material';
+import { useJsApiLoader } from '@react-google-maps/api';
 import api from '../../api';
+import BakeryAutocomplete from './BakeryAutocomplete';
+import RogalFormMap from './RogalFormMap';
+import { getGeocode, getLatLng } from 'use-places-autocomplete';
+
+const GOOGLE_LIBRARIES = ['places'];
 
 const AddRogal = () => {
-    const [name, setName] = useState('');
+    const { isLoaded } = useJsApiLoader({
+        googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
+        libraries: GOOGLE_LIBRARIES,
+    });
+
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
     const [weight, setWeight] = useState('');
+    const [name, setName] = useState('');
     const [image, setImage] = useState(null);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
+    const [bakeryAddress, setBakeryAddress] = useState('');
+    const [bakeryLat, setBakeryLat] = useState(null);
+    const [bakeryLng, setBakeryLng] = useState(null);
+
+    // Automatyczne geokodowanie po wpisaniu adresu ręcznie
+    React.useEffect(() => {
+        if (!isLoaded) return;
+
+        if (
+            bakeryAddress &&
+            (bakeryLat === null || bakeryLng === null)
+        ) {
+            getGeocode({ address: bakeryAddress })
+                .then(results => getLatLng(results[0]))
+                .then(({ lat, lng }) => {
+                    setBakeryLat(lat);
+                    setBakeryLng(lng);
+                })
+                .catch(() => {
+                    // Jeśli nie udało się znaleźć współrzędnych, nie zmieniaj
+                });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [bakeryAddress, isLoaded]);
+
+    if (!isLoaded) return <div>Ładowanie mapy i autouzupełniania...</div>;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -22,6 +59,14 @@ const AddRogal = () => {
         formData.append('price', formattedPrice);
         formData.append('weight', weight);
         formData.append('image', image);
+
+        if (bakeryAddress) {
+            formData.append('bakery[address]', bakeryAddress);
+            if (bakeryLat !== null && bakeryLng !== null) {
+                formData.append('bakery[lat]', bakeryLat);
+                formData.append('bakery[lng]', bakeryLng);
+            }
+        }
 
         try {
             await api.post('/rogals', formData, {
@@ -54,12 +99,34 @@ const AddRogal = () => {
             {success && <Alert severity="success">Rogal został dodany pomyślnie! Poczekaj na zatwierdzenie przez administratora.</Alert>}
             <form onSubmit={handleSubmit}>
                 <Box sx={{ mb: 2 }}>
+                </Box>
+                <Box sx={{ mb: 2 }}>
                     <TextField
-                        label="Nazwa"
+                        label="Nazwa piekarni"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={e => setName(e.target.value)}
                         required
                         fullWidth
+                    />
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                    <BakeryAutocomplete
+                        onSelect={({ address, lat, lng }) => {
+                            setBakeryAddress(address);
+                            setBakeryLat(lat);
+                            setBakeryLng(lng);
+                        }}
+                    />
+                </Box>
+
+                <Box sx={{ mb: 2 }}>
+                    <RogalFormMap
+                        lat={bakeryLat}
+                        lng={bakeryLng}
+                        onMapClick={({ lat, lng }) => {
+                            setBakeryLat(lat);
+                            setBakeryLng(lng);
+                        }}
                     />
                 </Box>
                 <Box sx={{ mb: 2 }}>

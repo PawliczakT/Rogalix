@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { Container, Typography, Box, Card, CardContent, TextField, Button, Alert } from '@mui/material';
+import RogalFormMap from './RogalFormMap';
 
 const RogalDetails = () => {
     const { id } = useParams();
@@ -65,8 +66,18 @@ const RogalDetails = () => {
                 <Card>
                     <CardContent>
                         <Typography variant="h4" component="h1" gutterBottom>
-                            {rogal.name}
+                            {rogal.bakery && rogal.bakery.name ? rogal.bakery.name : rogal.name}
                         </Typography>
+                        {rogal.bakery && rogal.bakery.address && (
+                          <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+                            Adres piekarni: {rogal.bakery.address}
+                          </Typography>
+                        )}
+                        {rogal.bakery && rogal.bakery.lat && rogal.bakery.lng && (
+                          <Box sx={{ my: 2 }}>
+                            <RogalFormMap lat={rogal.bakery.lat} lng={rogal.bakery.lng} />
+                          </Box>
+                        )}
                         <Typography variant="body1">{rogal.description}</Typography>
                         <Typography variant="body1">Cena: {rogal.price}</Typography>
                         <Typography variant="body1">Waga: {rogal.weight}</Typography>
@@ -83,6 +94,17 @@ const RogalDetails = () => {
                             Liczba głosów: {rogal.ratings ? rogal.ratings.length : 'No votes yet'}
                         </Typography>
                         {rogal.image && <img src={rogal.image} alt={rogal.name} style={{ maxWidth: '100%' }} />}
+                        {rogal.bakery && rogal.bakery.name && (
+                          <Button
+                            variant="outlined"
+                            color="secondary"
+                            sx={{ mt: 2 }}
+                            onClick={() => navigate(`/bakery/${encodeURIComponent(rogal.bakery.name)}`)}
+                          >
+                            Zobacz piekarnię
+                          </Button>
+                        )}
+
                     </CardContent>
                 </Card>
                 {isLoggedIn && (

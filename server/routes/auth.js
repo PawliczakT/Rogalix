@@ -4,6 +4,9 @@ import authController from '../controllers/authController.js';
 import User from '../models/User.js';
 import { auth, adminAuth } from '../middlewares/auth.js';
 import bcrypt from 'bcryptjs';
+import passport from 'passport';
+import jwt from 'jsonwebtoken';
+import { secretOrKey } from '../config/config.js';
 
 const router = express.Router();
 
@@ -101,6 +104,30 @@ router.put(
             console.error(err.message);
             res.status(500).send('Server error');
         }
+    }
+);
+
+// --- Google OAuth ---
+// Główne trasy
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get(
+    '/google/callback',
+    passport.authenticate('google', { session: false, failureRedirect: process.env.FRONTEND_URL + '/login?google=fail' }),
+    (req, res) => {
+        const payload = { id: req.user.id };
+        const token = jwt.sign(payload, secretOrKey, { expiresIn: 3600 });
+        res.redirect(`${process.env.FRONTEND_URL}/google-auth?token=${token}`);
+    }
+);
+// Alias dla /auth/google i /auth/google/callback (historycznie spotykane)
+router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get(
+    '/auth/google/callback',
+    passport.authenticate('google', { session: false, failureRedirect: process.env.FRONTEND_URL + '/login?google=fail' }),
+    (req, res) => {
+        const payload = { id: req.user.id };
+        const token = jwt.sign(payload, secretOrKey, { expiresIn: 3600 });
+        res.redirect(`${process.env.FRONTEND_URL}/google-auth?token=${token}`);
     }
 );
 

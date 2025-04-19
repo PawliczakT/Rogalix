@@ -37,6 +37,7 @@ passportConfig(passport);
 
 // Use Routes
 app.use('/api/users', users);
+app.use('/api/auth', users);
 app.use('/api/rogals', rogals);
 app.use('/api/gustometr', gustometr);
 

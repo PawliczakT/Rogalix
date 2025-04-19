@@ -8,14 +8,25 @@ const addRogal = async (req, res) => {
             return res.status(400).json({ msg: 'Rogal with this name already exists' });
         }
 
-        const newRogal = new Rogal({
-            name,
-            description,
-            price: parseFloat(price.replace(',', '.')), // Parse price as float
-            weight: parseFloat(weight.replace(',', '.')), // Parse weight as float
-            user: req.user.id,
-            image: req.file ? req.file.location : null,
-        });
+        let bakeryObj = undefined;
+if (req.body.bakery && req.body.bakery.address) {
+    bakeryObj = {
+        name: req.body.bakery.name,
+        address: req.body.bakery.address,
+        lat: req.body.bakery.lat,
+        lng: req.body.bakery.lng
+    };
+}
+
+const newRogal = new Rogal({
+    name,
+    description,
+    price: parseFloat(price.replace(',', '.')), // Parse price as float
+    weight: parseFloat(weight.replace(',', '.')), // Parse weight as float
+    user: req.user.id,
+    image: req.file ? req.file.location : null,
+    ...(bakeryObj ? { bakery: bakeryObj } : {})
+});
 
         const rogal = await newRogal.save();
         console.log('New Rogal added:', rogal); // Log the new rogal

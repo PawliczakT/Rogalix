@@ -57,7 +57,15 @@ router.post(
         }
 
         try {
-            const {name, description, price, weight} = req.body;
+            const {name, description, price, weight, bakery} = req.body;
+
+            // Sprawdź czy już istnieje rogal z tą piekarnią
+            if (bakery && bakery.name) {
+                const existingBakeryRogal = await Rogal.findOne({ 'bakery.name': bakery.name });
+                if (existingBakeryRogal) {
+                    return res.status(400).json({msg: 'Każda piekarnia może mieć tylko jednego rogala w systemie'});
+                }
+            }
 
             const existingRogal = await Rogal.findOne({name});
             if (existingRogal) {
@@ -101,15 +109,23 @@ router.post(
 
             const formattedPrice = parseFloat(price.replace(',', '.')).toFixed(2);
 
-            const newRogal = new Rogal({
-                name,
-                description,
-                price: formattedPrice,
-                weight,
-                user: req.user.id,
-                image: imageUrl,
-                approved: false
-            });
+            const bakeryObj = bakery && bakery.address ? {
+    name: bakery.name,
+    address: bakery.address,
+    lat: bakery.lat,
+    lng: bakery.lng
+} : undefined;
+
+const newRogal = new Rogal({
+    name,
+    description,
+    price: formattedPrice,
+    weight,
+    user: req.user.id,
+    image: imageUrl,
+    approved: false,
+    ...(bakeryObj ? { bakery: bakeryObj } : {})
+});
 
             const rogal = await newRogal.save();
             console.log("New Rogal added:", rogal);
@@ -121,12 +137,71 @@ router.post(
     }
 );
 
+// @route   GET api/rogals/years
+// @desc    Get all unique years from rogals' creation date
+// @access  Public
+router.get('/years', async (req, res) => {
+    try {
+        const rogals = await Rogal.find({}, 'date createdAt');
+        const yearsSet = new Set();
+        rogals.forEach(rogal => {
+            // Prefer 'date' field if it exists, otherwise fallback to createdAt
+            let dateToUse = rogal.date || rogal.createdAt;
+            if (dateToUse) {
+                const year = new Date(dateToUse).getFullYear();
+                if (!isNaN(year)) yearsSet.add(year);
+            }
+        });
+        const years = Array.from(yearsSet).sort((a, b) => b - a);
+        res.json(years);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// @route   GET api/rogals
+// @desc    Get all rogals or filter ratings by year
+// @access  Public
+router.get('/', async (req, res) => {
+    try {
+        const { year } = req.query;
+        let rogals = await Rogal.find().populate('user', ['name']);
+        if (year) {
+            rogals = rogals.filter(rogal => {
+                const dateToUse = rogal.date || rogal.createdAt;
+                if (!dateToUse) return false;
+                const rogalYear = new Date(dateToUse).getFullYear();
+                return rogalYear === parseInt(year, 10);
+            });
+        }
+        const rogalsWithAdditionalInfo = rogals.map(rogal => {
+            const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
+            const pricePerKg = (rogal.price / rogal.weight) * 1000;
+            return { ...rogal.toObject(), averageRating, pricePerKg };
+        });
+        res.json(rogalsWithAdditionalInfo);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
 // @route   GET api/rogals/admin
 // @desc    Get all rogals for admin
 // @access  Private/Admin
 router.get('/admin', [auth, adminAuth], async (req, res) => {
     try {
-        const rogals = await Rogal.find().populate('user', ['name']);
+        const { year } = req.query;
+        let rogals = await Rogal.find().populate('user', ['name']);
+        if (year) {
+            rogals = rogals.filter(rogal => {
+                const dateToUse = rogal.date || rogal.createdAt;
+                if (!dateToUse) return false;
+                const rogalYear = new Date(dateToUse).getFullYear();
+                return rogalYear === parseInt(year, 10);
+            });
+        }
         const rogalsWithAdditionalInfo = rogals.map(rogal => {
             const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
             const pricePerKg = (rogal.price / rogal.weight) * 1000;
@@ -176,8 +251,16 @@ router.put('/approve/:id', [auth, adminAuth], async (req, res) => {
 // @access  Private
 router.get('/my-ratings', auth, async (req, res) => {
     try {
-        const rogals = await Rogal.find().populate('ratings.user', 'name');
-
+        const { year } = req.query;
+        let rogals = await Rogal.find().populate('ratings.user', 'name');
+        if (year) {
+            rogals = rogals.filter(rogal => {
+                const dateToUse = rogal.date || rogal.createdAt;
+                if (!dateToUse) return false;
+                const rogalYear = new Date(dateToUse).getFullYear();
+                return rogalYear === parseInt(year, 10);
+            });
+        }
         const userRatings = rogals.map((rogal) => {
             const rating = rogal.ratings.find((r) => r.user && r.user._id.toString() === req.user.id);
 
@@ -198,7 +281,16 @@ router.get('/my-ratings', auth, async (req, res) => {
 
 router.get('/user-ratings', async (req, res) => {
     try {
-        const rogals = await Rogal.find().populate('ratings.user', 'name');
+        const { year } = req.query;
+        let rogals = await Rogal.find().populate('ratings.user', 'name');
+        if (year) {
+            rogals = rogals.filter(rogal => {
+                const dateToUse = rogal.date || rogal.createdAt;
+                if (!dateToUse) return false;
+                const rogalYear = new Date(dateToUse).getFullYear();
+                return rogalYear === parseInt(year, 10);
+            });
+        }
         rogals.forEach(rogal => {
             console.log("Rogal:", rogal.name, "ID:", rogal._id.toString());
             rogal.ratings.forEach(rating => {
@@ -227,7 +319,16 @@ router.get('/user-ratings', async (req, res) => {
 // @access  Public
 router.get('/top10', async (req, res) => {
     try {
-        const rogals = await Rogal.find({approved: true}).populate('user', ['name']);
+        const { year } = req.query;
+        let rogals = await Rogal.find({approved: true}).populate('user', ['name']);
+        if (year) {
+            rogals = rogals.filter(rogal => {
+                const dateToUse = rogal.date || rogal.createdAt;
+                if (!dateToUse) return false;
+                const rogalYear = new Date(dateToUse).getFullYear();
+                return rogalYear === parseInt(year, 10);
+            });
+        }
         const rogalsWithRatings = rogals.map(rogal => {
             const totalRating = rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0);
             const averageRating = rogal.ratings.length ? totalRating / rogal.ratings.length : 0;
@@ -258,7 +359,16 @@ router.get('/top10', async (req, res) => {
 // @access  Public
 router.get('/top10quality', async (req, res) => {
     try {
-        const rogals = await Rogal.find({approved: true}).populate('user', ['name']);
+        const { year } = req.query;
+        let rogals = await Rogal.find({approved: true}).populate('user', ['name']);
+        if (year) {
+            rogals = rogals.filter(rogal => {
+                const dateToUse = rogal.date || rogal.createdAt;
+                if (!dateToUse) return false;
+                const rogalYear = new Date(dateToUse).getFullYear();
+                return rogalYear === parseInt(year, 10);
+            });
+        }
         const rogalsWithQualityToPriceRatio = rogals.map(rogal => {
             const averageRating = rogal.ratings.length ? (rogal.ratings.reduce((sum, rating) => sum + rating.rating, 0) / rogal.ratings.length) : 0;
             const pricePerKg = (rogal.price / rogal.weight) * 1000;

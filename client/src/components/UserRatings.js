@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useYear } from '../context/YearContext';
 import api from '../api';
 import { Container, Typography, List, ListItem, ListItemText, Box, TextField, Button, Alert } from '@mui/material';
 
 const UserRatings = () => {
+    const { year: selectedYear } = useYear();
     const [ratings, setRatings] = useState([]);
     const [selectedRating, setSelectedRating] = useState(null);
     const [newRating, setNewRating] = useState('');
@@ -14,6 +16,7 @@ const UserRatings = () => {
             try {
                 const token = localStorage.getItem('token');
                 const res = await api.get('/rogals/my-ratings', {
+                    params: { year: selectedYear },
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -28,7 +31,7 @@ const UserRatings = () => {
         };
 
         fetchRatings();
-    }, []);
+    }, [selectedYear]);
 
     const handleEdit = (rating) => {
         setSelectedRating(rating);
@@ -50,6 +53,7 @@ const UserRatings = () => {
             setNewRating('');
             // Refresh ratings
             const res = await api.get('/rogals/my-ratings', {
+                params: { year: selectedYear },
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

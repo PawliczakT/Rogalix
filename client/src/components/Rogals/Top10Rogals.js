@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from 'react';
+import { useYear } from '../../context/YearContext';
 import { Link } from 'react-router-dom';
 import api from '../../api';
 import { Container, Typography, Box, Card, CardContent, CardActions, Button } from '@mui/material';
 
 const Top10Rogals = () => {
+    const { year: selectedYear } = useYear();
     const [rogals, setRogals] = useState([]);
 
     useEffect(() => {
         const fetchTop10Rogals = async () => {
             try {
-                const res = await api.get('/rogals/top10');
+                const res = await api.get('/rogals/top10', { params: { year: selectedYear } });
                 setRogals(res.data);
             } catch (err) {
-                console.error(err.response.data);
+                console.error(err.response?.data || err.message);
             }
         };
 
         fetchTop10Rogals();
-    }, []);
+    }, [selectedYear]);
 
     return (
         <Container>

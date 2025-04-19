@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useYear } from '../../context/YearContext';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { Container, Typography, Button, Box, Card, CardContent, CardActions } from '@mui/material';
 
 const RogalListPage = () => {
+    const { year: selectedYear } = useYear();
     const [rogals, setRogals] = useState([]);
     const [averagePrice, setAveragePrice] = useState(0);
     const [averageWeight, setAverageWeight] = useState(0);
@@ -24,7 +26,7 @@ const RogalListPage = () => {
                 }
                 setIsAdmin(isAdmin);
 
-                const res = isAdmin ? await api.get('/rogals/admin') : await api.get('/rogals');
+                const res = isAdmin ? await api.get('/rogals/admin', { params: { year: selectedYear } }) : await api.get('/rogals', { params: { year: selectedYear } });
                 const sortedRogals = res.data.sort((a, b) => a.name.localeCompare(b.name));
                 setRogals(sortedRogals);
 
@@ -37,7 +39,7 @@ const RogalListPage = () => {
         };
 
         fetchRogals();
-    }, []);
+    }, [selectedYear]);
 
     const deleteRogal = async (id) => {
         try {

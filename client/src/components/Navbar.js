@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
+import YearSelector from './YearSelector';
 
 const Navbar = () => {
     const token = localStorage.getItem('token');
@@ -43,6 +44,7 @@ const Navbar = () => {
                         <Button color="inherit" onClick={handleLogout}>Wyloguj</Button>
                     </>
                 )}
+                <YearSelector />
             </Toolbar>
         </AppBar>
     );
